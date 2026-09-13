@@ -56,3 +56,66 @@ textarea::placeholder {
     width: 60%;
   }
 }
+
+/* Refined Now Playing 流体背景流动动效 */
+@keyframes rnp-fluid-container-rotate {
+  0% {
+    transform: scale(1.2) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.2) rotate(-360deg);
+  }
+}
+
+@keyframes rnp-fluid-block-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rnp-fluid-rect {
+  animation: rnp-fluid-container-rotate 150s linear infinite;
+  filter: saturate(1.6) brightness(0.95) url(#rnp-fluid-filter);
+  will-change: transform;
+}
+
+.rnp-fluid-canvas {
+  animation: rnp-fluid-block-rotate 60s linear infinite;
+  will-change: transform;
+}
+
+.rnp-paused,
+.rnp-paused .rnp-fluid-canvas {
+  animation-play-state: paused !important;
+}
+
+/* AMLL (Apple Music Like Lyrics) 沉浸播放页样式适配 */
+.amll-lyric-player {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  --amll-lp-font-size: clamp(34px, 3.2vw, 46px);
+  --amll-lp-line-padding-x: 0px;
+  --amll-lp-hover-bg-color: transparent;
+  --amll-lp-color: #ffffff;
+}
+
+/* 歌词行间距增加呼吸感，完美对齐 Refined Now Playing */
+.amll-lyric-player .FmKaba_lyricLineWrapper {
+  padding-top: 0.85em;
+  padding-bottom: 0.85em;
+  gap: 0.35em;
+}
+
+/* 翻译与副行样式对齐 */
+.amll-lyric-player .FmKaba_lyricSubLine {
+  font-size: 0.55em;
+  line-height: 1.35;
+  opacity: 0.7;
+  font-weight: 500;
+  margin-top: 0.25em;
+}

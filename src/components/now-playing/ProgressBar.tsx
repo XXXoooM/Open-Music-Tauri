@@ -64,12 +64,15 @@ export default function ProgressBar() {
     <div
       ref={barRef}
       className="relative w-full h-[2px] select-none"
-      style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+      style={{ backgroundColor: 'rgba(255, 255, 255, 0.14)' }}
     >
       {/* 实际播放进度条 */}
       <div
-        className="h-full bg-[var(--text-primary)] pointer-events-none"
-        style={{ width: `${displayPercent}%` }}
+        className="h-full pointer-events-none transition-all duration-75"
+        style={{
+          width: `${displayPercent}%`,
+          backgroundColor: 'var(--dynamic-accent, #ffffff)',
+        }}
       />
 
       {/* 12px 高的透明拖拽点击热区 */}

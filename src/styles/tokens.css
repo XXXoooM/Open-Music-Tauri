@@ -25,12 +25,12 @@
     --color-fg-tertiary: rgba(255, 255, 255, 0.38);
 
     /* --- 表面（材质） --- */
-    --color-surface-sidebar: rgba(28, 28, 30, 0.72);
-    --color-surface-content: rgba(20, 20, 22, 0.80);
-    --color-surface-player: rgba(40, 40, 44, 0.68);
+    --color-surface-sidebar: rgba(28, 28, 30, 0.22);
+    --color-surface-content: rgba(20, 20, 22, 0.30);
+    --color-surface-player: rgba(40, 40, 44, 0.28);
 
     /* --- 全屏播放页底色（完全实心，不透视下层） --- */
-    --color-now-playing-base: #0a0b0f;
+    --color-now-playing-base: #EFF0F5;
 
     /* --- 状态 --- */
     --color-state-hover: rgba(255, 255, 255, 0.06);
@@ -118,6 +118,13 @@
             #1a1c2e 0%,
             #07080d 100%);
     --dynamic-accent: #fa2d48;
+    --dynamic-accent-rgb: 250, 45, 72;
+    --dynamic-text-primary: #ffffff;
+    --dynamic-text-secondary: rgba(255, 255, 255, 0.72);
+    --dynamic-text-tertiary: rgba(255, 255, 255, 0.45);
+    --dynamic-overlay: rgba(0, 0, 0, 0.35);
+    --dynamic-glow: rgba(250, 45, 72, 0.6);
+    --dynamic-fluid-filter: saturate(1.5) brightness(1.05);
 
     /* 阴影 */
     --shadow-artwork: 0 20px 60px rgba(0, 0, 0, 0.5);

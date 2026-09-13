@@ -42,6 +42,15 @@ export function parseLyrics(text: string): LyricLine[] {
     time: line.startTime / 1000, // 毫秒 → 秒
     text: line.words?.map((w) => w.word).join('') ?? '',
     translation: line.translatedLyric || undefined,
+    romaji: line.romanLyric || undefined,
+    words:
+      line.words && line.words.length > 0
+        ? line.words.map((w) => ({
+            word: w.word,
+            startTime: w.startTime / 1000,
+            endTime: w.endTime / 1000,
+          }))
+        : undefined,
     // 保留原始 AMLL 行数据，供 LyricPlayer 使用
     _amllRaw: line,
   }));

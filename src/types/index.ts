@@ -22,8 +22,16 @@ export interface Track {
   lrc: string;
   /** 专辑名称（预留字段，API 可能缺省） */
   album?: string;
+  /** 歌曲副标题/译名/别名（可选） */
+  alias?: string;
   /** 音频总时长，单位为秒（预留字段，通常加载音频元数据后获取） */
   duration?: number;
+}
+
+export interface LyricWord {
+  word: string;
+  startTime: number;
+  endTime: number;
 }
 
 /**
@@ -37,6 +45,10 @@ export interface LyricLine {
   text: string;
   /** 翻译文本（可选，来自 AMLL 解析或双语 LRC） */
   translation?: string;
+  /** 罗马音/假名注音文本（可选，来自 AMLL 解析） */
+  romaji?: string;
+  /** YRC 逐字歌词切分词汇数组（可选） */
+  words?: LyricWord[];
   /** 原始 AMLL 歌词行数据（用于传递给 LyricPlayer） */
   _amllRaw?: unknown;
 }

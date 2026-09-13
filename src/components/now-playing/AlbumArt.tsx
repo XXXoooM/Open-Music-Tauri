@@ -11,27 +11,41 @@ function ArtworkView({ track }: ArtworkViewProps) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div
-      data-album-art
-      className="artwork-fade-in w-[min(38vh,360px)] h-[min(38vh,360px)] rounded-[var(--radius-lg)] overflow-hidden shrink-0 select-none"
-      style={{
-        boxShadow:
-          '0 24px 72px rgba(0, 0, 0, 0.5), 0 0 120px var(--dynamic-accent)',
-      }}
-    >
-      {!track.pic || imgError ? (
-        <div className="w-full h-full flex items-center justify-center bg-[var(--hover)]">
-          <Music className="w-[64px] h-[64px] text-[var(--text-tertiary)]" />
-        </div>
-      ) : (
-        <img
-          src={track.pic}
-          alt={track.name}
-          onError={() => setImgError(true)}
-          className="w-full h-full object-cover"
-          draggable={false}
+    <div className="relative shrink-0 select-none">
+      {/* 真实封面镜像光晕（高饱和环境漫反射，零生硬黑阴影） */}
+      {track.pic && !imgError && (
+        <div
+          className="absolute inset-0 rounded-[14px] pointer-events-none transition-all duration-700"
+          style={{
+            backgroundImage: `url(${track.pic})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'saturate(1.5) brightness(1.1) blur(24px)',
+            opacity: 0.7,
+            transform: 'translateY(4%) scale(0.96)',
+          }}
         />
       )}
+
+      {/* 封面主体 */}
+      <div
+        data-album-art
+        className="artwork-fade-in relative w-[clamp(190px,28vh,270px)] h-[clamp(190px,28vh,270px)] rounded-[14px] overflow-hidden shrink-0"
+      >
+        {!track.pic || imgError ? (
+          <div className="w-full h-full flex items-center justify-center bg-[var(--hover)]">
+            <Music className="w-[48px] h-[48px] text-[var(--text-tertiary)]" />
+          </div>
+        ) : (
+          <img
+            src={track.pic}
+            alt={track.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -43,7 +57,7 @@ export default function AlbumArt() {
     return (
       <div
         data-album-art
-        className="w-[min(38vh,360px)] h-[min(38vh,360px)] rounded-[var(--radius-lg)] bg-[var(--hover)] shrink-0"
+        className="w-[clamp(190px,28vh,270px)] h-[clamp(190px,28vh,270px)] rounded-[14px] bg-[var(--hover)] shrink-0"
       />
     );
   }
