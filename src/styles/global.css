@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Open-Music 全局样式入口
+   
+   顺序很重要：
+   1. tokens.css 定义所有设计令牌
+   2. 其它全局样式追加在后
+   ========================================================================== */
+
+@import "./tokens.css";
+
+/* 统一 lucide 图标描边宽度，遵循 DESIGN.md 第 10 节 */
+.lucide {
+  stroke-width: 1.8;
+}
+
+/* 专辑封面切歌过渡动画 */
+@keyframes artwork-fade-in {
+  from {
+    transform: scale(1.04);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.artwork-fade-in {
+  animation: artwork-fade-in var(--duration-artwork) var(--ease-apple) both;
+}
+
+/* 输入框 placeholder 颜色 */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* 1100px 响应式断点（遵循 DESIGN.md 第 9 节） */
+@media (max-width: 1100px) {
+  [data-now-playing-main] {
+    padding-left: 40px;
+    padding-right: 40px;
+    gap: 40px;
+  }
+  [data-album-art] {
+    width: min(32vh, 300px);
+    height: min(32vh, 300px);
+  }
+  [data-mini-player-right] {
+    display: none;
+  }
+  [data-mini-player-left] {
+    width: 40%;
+  }
+  [data-mini-player-center] {
+    width: 60%;
+  }
+}

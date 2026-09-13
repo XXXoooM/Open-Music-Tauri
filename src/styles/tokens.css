@@ -1,0 +1,347 @@
+/* ==========================================================================
+   Open-Music 设计令牌（Design Tokens）
+   
+   本文件是所有设计值的唯一来源。
+   禁止在组件中硬编码颜色、圆角、动效曲线。
+   
+   命名约定：
+   - Tailwind 工具类使用 --color-* 命名空间（如 bg-accent、text-fg-primary）
+   - CSS 与内联 style 使用文档别名（如 var(--text-primary)、var(--material-sidebar)）
+   ========================================================================== */
+
+@import "tailwindcss";
+
+/* --------------------------------------------------------------------------
+   1. Theme Tokens
+   -------------------------------------------------------------------------- */
+
+@theme {
+    /* --- 强调色 --- */
+    --color-accent: #fa2d48;
+
+    /* --- 前景（文字） --- */
+    --color-fg-primary: rgba(255, 255, 255, 0.95);
+    --color-fg-secondary: rgba(255, 255, 255, 0.62);
+    --color-fg-tertiary: rgba(255, 255, 255, 0.38);
+
+    /* --- 表面（材质） --- */
+    --color-surface-sidebar: rgba(28, 28, 30, 0.72);
+    --color-surface-content: rgba(20, 20, 22, 0.80);
+    --color-surface-player: rgba(40, 40, 44, 0.68);
+
+    /* --- 全屏播放页底色（完全实心，不透视下层） --- */
+    --color-now-playing-base: #0a0b0f;
+
+    /* --- 状态 --- */
+    --color-state-hover: rgba(255, 255, 255, 0.06);
+    --color-state-active: rgba(255, 255, 255, 0.10);
+    --color-state-line: rgba(255, 255, 255, 0.08);
+
+    /* --- 半透明白（叠加层用） --- */
+    --color-overlay-15: rgba(255, 255, 255, 0.15);
+    --color-overlay-25: rgba(255, 255, 255, 0.25);
+
+    /* --- 圆角 --- */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-full: 999px;
+
+    /* --- 字体 --- */
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "PingFang SC", "Helvetica Neue", sans-serif;
+    --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+        "PingFang SC", "Helvetica Neue", sans-serif;
+
+    /* --- 缓动 --- */
+    --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* --- 模糊 --- */
+    --blur-sidebar: 50px;
+    --blur-player: 40px;
+    --blur-panel: 50px;
+
+    /* --- 动画时长 --- */
+    --duration-hover: 150ms;
+    --duration-press: 100ms;
+    --duration-fast: 200ms;
+    --duration-panel: 350ms;
+    --duration-page: 400ms;
+    --duration-artwork: 600ms;
+    --duration-background: 1500ms;
+
+    /* --- 布局尺寸（不生成工具类，仅作 CSS 变量） --- */
+    --layout-sidebar-width: 240px;
+    --layout-sidebar-collapsed: 60px;
+    --layout-player-height: 72px;
+    --layout-content-padding-x: 32px;
+    --layout-content-padding-y: 24px;
+    --layout-topbar-height: 52px;
+}
+
+/* --------------------------------------------------------------------------
+   2. 文档别名（与 DESIGN.md / CLAUDE.md 命名一致）
+   
+   在 CSS 与内联 style 中使用：
+     background: var(--material-sidebar);
+     color: var(--text-primary);
+   
+   在 Tailwind 工具类中使用 --color-* 名称：
+     className="bg-surface-sidebar text-fg-primary"
+   -------------------------------------------------------------------------- */
+
+:root {
+    /* 文字 */
+    --text-primary: var(--color-fg-primary);
+    --text-secondary: var(--color-fg-secondary);
+    --text-tertiary: var(--color-fg-tertiary);
+
+    /* 材质 */
+    --material-sidebar: var(--color-surface-sidebar);
+    --material-content: var(--color-surface-content);
+    --material-player: var(--color-surface-player);
+    --now-playing-base: var(--color-now-playing-base);
+
+    /* 状态 */
+    --accent: var(--color-accent);
+    --hover: var(--color-state-hover);
+    --active: var(--color-state-active);
+    --border-subtle: var(--color-state-line);
+
+    /* 叠加层 */
+    --overlay-15: var(--color-overlay-15);
+    --overlay-25: var(--color-overlay-25);
+
+    /* 动态值 —— 运行时由 useDynamicColor hook 覆盖 */
+    --dynamic-gradient: radial-gradient(circle at 30% 30%,
+            #1a1c2e 0%,
+            #07080d 100%);
+    --dynamic-accent: #fa2d48;
+
+    /* 阴影 */
+    --shadow-artwork: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --shadow-panel: -8px 0 32px rgba(0, 0, 0, 0.4);
+
+    /* z-index 层级 */
+    --z-content: 0;
+    --z-player: 50;
+    --z-overlay: 100;
+    --z-panel: 200;
+    --z-modal: 300;
+    --z-toast: 400;
+}
+
+/* --------------------------------------------------------------------------
+   3. 全局重置
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Tauri 透明窗口：让系统 vibrancy 透出来 */
+html,
+body {
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+    /* 滚动由内部容器负责 */
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+}
+
+/* --- 表单与交互元素重置 --- */
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+input,
+select,
+textarea {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   4. 全局细节
+   -------------------------------------------------------------------------- */
+
+/* 文字选区 */
+::selection {
+    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--text-primary);
+}
+
+/* 焦点可见性（键盘导航） */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+/* 滚动条 —— 默认隐藏，悬停父容器时淡入 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: var(--radius-full);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background var(--duration-hover) var(--ease-apple);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+    background-clip: padding-box;
+}
+
+/* Firefox 回退 */
+*:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+/* --------------------------------------------------------------------------
+   5. 工具类
+   -------------------------------------------------------------------------- */
+
+/* 数字对齐 */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* 禁止选中 */
+.no-select {
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Tauri 拖拽区 */
+.drag-region {
+    -webkit-app-region: drag;
+}
+
+.no-drag {
+    -webkit-app-region: no-drag;
+}
+
+/* 单行省略 */
+.truncate-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 多行省略 */
+.truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 骨架屏微光 */
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.04) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.04) 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s linear infinite;
+    border-radius: var(--radius-sm);
+}
+
+/* 减少动效（无障碍） */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
