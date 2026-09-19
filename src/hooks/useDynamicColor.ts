@@ -73,6 +73,10 @@ export function useDynamicColor(coverUrl: string, trackKey: string): void {
 
       if (cancelled) return;
       const root = document.documentElement;
+      const currentGrad = root.style.getPropertyValue('--dynamic-gradient');
+      if (currentGrad && currentGrad !== gradient) {
+        root.style.setProperty('--dynamic-gradient-prev', currentGrad);
+      }
       root.style.setProperty('--dynamic-accent', theme.accent);
       root.style.setProperty('--dynamic-accent-rgb', theme.accentRgb);
       root.style.setProperty('--dynamic-text-primary', theme.textPrimary);

@@ -69,13 +69,13 @@ export function useAudio(): void {
   }, []);
 
   // 方向 2：Store → 引擎（播放/切歌意图驱动）
+  const currentTrackUrl = playlist[currentTrackIndex]?.url ?? null;
+
   useEffect(() => {
     const player = getPlayer();
-    const track = playlist[currentTrackIndex];
-    const url = track?.url ?? null;
 
     if (isPlaying) {
-      const result = player.play(url);
+      const result = player.play(currentTrackUrl);
       if (result && typeof result.catch === 'function') {
         result.catch((e: unknown) => {
           console.warn('Play blocked by browser autoplay policy:', e);
@@ -85,7 +85,7 @@ export function useAudio(): void {
     } else {
       player.pause();
     }
-  }, [playlist, currentTrackIndex, isPlaying]);
+  }, [currentTrackUrl, isPlaying]);
 
   // 方向 2：Store → 引擎（一次性 seek 信号消费）
   useEffect(() => {

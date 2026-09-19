@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { ChevronDown, Minus, Square, X, User, Disc } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { isTauri } from '../../env';
@@ -6,7 +6,8 @@ import { usePlayerStore } from '../../stores/playerStore';
 import AlbumArt from './AlbumArt';
 import ControlBar from './ControlBar';
 import DynamicBackground from './DynamicBackground';
-import LyricsView from './LyricsView';
+
+const LyricsView = lazy(() => import('./LyricsView'));
 
 interface NowPlayingProps {
   isOpen: boolean;
@@ -115,7 +116,9 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
           className="w-1/2 h-full overflow-hidden relative pl-[clamp(24px,3vw,48px)] pr-[clamp(48px,6vw,96px)]"
           style={{ height: 'calc(100vh - 160px)' }}
         >
-          <LyricsView />
+          <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-[var(--text-tertiary)] text-[14px]">加载歌词...</div>}>
+            <LyricsView />
+          </Suspense>
         </section>
       </main>
 

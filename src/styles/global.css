@@ -16,7 +16,7 @@
 /* 专辑封面切歌过渡动画 */
 @keyframes artwork-fade-in {
   from {
-    transform: scale(1.04);
+    transform: scale(0.96);
     opacity: 0;
   }
   to {
@@ -27,6 +27,20 @@
 
 .artwork-fade-in {
   animation: artwork-fade-in var(--duration-artwork) var(--ease-apple) both;
+}
+
+/* 切歌背景双层交叉淡入过渡 */
+@keyframes background-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+
+.background-crossfade {
+  animation: background-crossfade 1.2s var(--ease-apple) both;
 }
 
 /* 输入框 placeholder 颜色 */

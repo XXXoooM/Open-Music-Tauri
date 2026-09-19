@@ -59,19 +59,31 @@ export function parseLyrics(text: string): LyricLine[] {
 /** 兼容旧版命名导出 */
 export const parseLRC = parseLyrics;
 
+let activeAbortController: AbortController | null = null;
+
 /**
  * 根据网易云歌曲 ID 获取歌词
  * 优先解析 YRC 逐字歌词，降级 LRC 逐行歌词
+ * 配备 8 秒超时与切歌自动中断保护
  */
 export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
   if (!songId) return [];
 
+  if (activeAbortController) {
+    activeAbortController.abort();
+  }
+
+  const controller = new AbortController();
+  activeAbortController = controller;
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   try {
-    const res = await fetch(VKEYS_LYRIC_API(songId));
+    const res = await fetch(VKEYS_LYRIC_API(songId), { signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (!res.ok) throw new Error(`VKeys API error: ${res.status}`);
 
     const json: unknown = await res.json();
-    // 校验返回结构
     if (
       typeof json !== 'object' ||
       json === null ||
@@ -98,7 +110,15 @@ export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
 
     return [];
   } catch (e) {
+    clearTimeout(timeoutId);
+    if (e instanceof Error && e.name === 'AbortError') {
+      return [];
+    }
     console.warn('Lyrics fetch failed:', e);
     return [];
+  } finally {
+    if (activeAbortController === controller) {
+      activeAbortController = null;
+    }
   }
 }
