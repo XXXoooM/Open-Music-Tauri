@@ -127,6 +127,16 @@ export function useHotkeys(options: UseHotkeysOptions): void {
           break;
         }
 
+        case 'KeyF': {
+          if (!hasPlaylist) return;
+          e.preventDefault();
+          const track = player.playlist[player.currentTrackIndex];
+          if (track?.id) {
+            player.toggleFavorite(track.id);
+          }
+          break;
+        }
+
         default:
           break;
       }

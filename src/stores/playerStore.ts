@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Track, LyricLine, ApiSource } from '../types';
 import { useSettingsStore } from './settingsStore';
 import { fetchPlaylist, getFallbackPlaylist } from '../services/musicApi';
+import { storage } from '../utils/storage';
 
 /**
  * 播放器运行时状态与动作接口
@@ -33,6 +34,9 @@ interface PlayerState {
   // 历史记录
   playbackHistory: number[];
 
+  // 收藏歌曲 ID 集合
+  favoriteIds: string[];
+
   // 动作
   loadPlaylist(playlistId: string, apiSource: ApiSource): Promise<void>;
   playAt(index: number, options?: { fromHistory?: boolean }): void;
@@ -49,6 +53,9 @@ interface PlayerState {
   setLyrics(lyrics: LyricLine[]): void;
   setCurrentLyricIndex(index: number): void;
   toggleMute(): void;
+  toggleFavorite(id: string): void;
+  isFavorite(id: string): boolean;
+  loadFavorites(): Promise<void>;
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
@@ -235,4 +242,33 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       settings.setVolume(0);
     }
   },
+
+  favoriteIds: [],
+
+  toggleFavorite: (id: string): void => {
+    if (!id) return;
+    const { favoriteIds } = get();
+    const exists = favoriteIds.includes(id);
+    const next = exists ? favoriteIds.filter((item) => item !== id) : [...favoriteIds, id];
+    set({ favoriteIds: next });
+    void storage.set('favoriteIds', next);
+  },
+
+  isFavorite: (id: string): boolean => {
+    return !!id && get().favoriteIds.includes(id);
+  },
+
+  loadFavorites: async (): Promise<void> => {
+    try {
+      const saved = await storage.get<string[]>('favoriteIds');
+      if (Array.isArray(saved)) {
+        set({ favoriteIds: saved });
+      }
+    } catch (e) {
+      console.warn('Failed to load favoriteIds from storage:', e);
+    }
+  },
 }));
+
+// 初始化时自动拉取持久化收藏清单
+void usePlayerStore.getState().loadFavorites();

@@ -10,11 +10,16 @@ function formatTime(seconds: number): string {
 }
 
 export default function ControlBar() {
+  const currentTrack = usePlayerStore((s) => s.playlist[s.currentTrackIndex]);
+  const favoriteIds = usePlayerStore((s) => s.favoriteIds);
+  const toggleFavorite = usePlayerStore((s) => s.toggleFavorite);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const progress = usePlayerStore((s) => s.progress);
   const duration = usePlayerStore((s) => s.duration);
   const remaining = Math.max(0, duration - progress);
+
+  const isFav = currentTrack ? favoriteIds.includes(currentTrack.id) : false;
 
   return (
     <footer className="shrink-0 w-full select-none relative z-10">
@@ -22,9 +27,14 @@ export default function ControlBar() {
         {/* 左：爱心收藏按钮 */}
         <button
           type="button"
-          className="cursor-pointer p-2 text-white/80 hover:text-white transition-transform active:scale-95"
+          aria-label={isFav ? '取消收藏' : '收藏歌曲'}
+          onClick={() => currentTrack && toggleFavorite(currentTrack.id)}
+          className="cursor-pointer p-2 transition-transform hover:scale-110 active:scale-90 select-none"
+          style={{
+            color: isFav ? 'var(--accent)' : 'rgba(255, 255, 255, 0.75)',
+          }}
         >
-          <Heart className="w-[22px] h-[22px] fill-current" />
+          <Heart className={`w-[22px] h-[22px] ${isFav ? 'fill-current' : ''}`} />
         </button>
 
         {/* 中：纯粹实心浮动播放/暂停按钮 */}
