@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import MainContent from './components/layout/MainContent';
 import MiniPlayer from './components/layout/MiniPlayer';
+import QueuePanel from './components/layout/QueuePanel';
 import NowPlaying from './components/now-playing/NowPlaying';
 import SettingsPanel from './components/settings/SettingsPanel';
 import { useAudio } from './hooks/useAudio';
@@ -16,6 +17,9 @@ export default function App() {
 
   // 设置面板展开状态
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // 待播清单展开状态
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
 
   // 1. 挂载音频引擎同步（全局一次）
   useAudio();
@@ -48,8 +52,10 @@ export default function App() {
   useHotkeys({
     isNowPlayingOpen,
     isSettingsOpen,
+    isQueueOpen,
     onCloseNowPlaying: () => setIsNowPlayingOpen(false),
     onCloseSettings: () => setIsSettingsOpen(false),
+    onCloseQueue: () => setIsQueueOpen(false),
   });
 
   // 6. 三段式布局骨架
@@ -65,7 +71,18 @@ export default function App() {
       </div>
 
       {/* MiniPlayer */}
-      <MiniPlayer onOpenNowPlaying={() => setIsNowPlayingOpen(true)} />
+      <MiniPlayer
+        isNowPlayingOpen={isNowPlayingOpen}
+        onToggleNowPlaying={() => setIsNowPlayingOpen((prev) => !prev)}
+        isQueueOpen={isQueueOpen}
+        onToggleQueue={() => setIsQueueOpen((prev) => !prev)}
+      />
+
+      {/* 待播清单浮层 */}
+      <QueuePanel
+        isOpen={isQueueOpen}
+        onClose={() => setIsQueueOpen(false)}
+      />
 
       {/* 全屏 NowPlaying 播放页 */}
       <NowPlaying

@@ -6,8 +6,10 @@ interface UseHotkeysOptions {
   /** 当前是否有 UI 面板打开（用于 Esc 的处理优先级） */
   isNowPlayingOpen: boolean;
   isSettingsOpen: boolean;
+  isQueueOpen?: boolean;
   onCloseNowPlaying(): void;
   onCloseSettings(): void;
+  onCloseQueue?(): void;
 }
 
 /**
@@ -15,7 +17,7 @@ interface UseHotkeysOptions {
  * 处理播放控制、音量调节、循环模式与浮层关闭
  */
 export function useHotkeys(options: UseHotkeysOptions): void {
-  const { isNowPlayingOpen, isSettingsOpen, onCloseNowPlaying, onCloseSettings } = options;
+  const { isNowPlayingOpen, isSettingsOpen, isQueueOpen, onCloseNowPlaying, onCloseSettings, onCloseQueue } = options;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +39,11 @@ export function useHotkeys(options: UseHotkeysOptions): void {
 
       // 规则 3：Esc 优先关闭最上层 UI
       if (e.code === 'Escape') {
+        if (isQueueOpen && onCloseQueue) {
+          e.preventDefault();
+          onCloseQueue();
+          return;
+        }
         if (isNowPlayingOpen) {
           e.preventDefault();
           onCloseNowPlaying();
@@ -127,5 +134,5 @@ export function useHotkeys(options: UseHotkeysOptions): void {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isNowPlayingOpen, isSettingsOpen, onCloseNowPlaying, onCloseSettings]);
+  }, [isNowPlayingOpen, isSettingsOpen, isQueueOpen, onCloseNowPlaying, onCloseSettings, onCloseQueue]);
 }
