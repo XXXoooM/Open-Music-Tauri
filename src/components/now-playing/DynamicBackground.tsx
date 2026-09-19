@@ -12,7 +12,7 @@ export default function DynamicBackground() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundColor: 'var(--dynamic-bg-base, #081612)',
+          backgroundColor: 'var(--dynamic-bg-base)',
           transition: 'background-color 1.5s var(--ease-apple)',
         }}
       />

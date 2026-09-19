@@ -85,7 +85,7 @@ export default function MiniPlayer({
             className="w-[44px] h-[44px] rounded-[var(--radius-full)] shrink-0 flex items-center justify-center cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
             style={{
               backgroundColor: isPlaying ? 'var(--text-primary)' : 'var(--overlay-15)',
-              color: isPlaying ? '#000' : 'var(--text-secondary)',
+              color: isPlaying ? 'var(--text-inverse)' : 'var(--text-secondary)',
             }}
           >
             {isPlaying ? <Pause className="w-[20px] h-[20px]" /> : <Play className="w-[20px] h-[20px] ml-[2px] fill-current" />}

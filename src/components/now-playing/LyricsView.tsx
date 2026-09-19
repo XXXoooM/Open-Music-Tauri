@@ -77,7 +77,7 @@ export default function LyricsView() {
   if (lyrics.length === 0 || amllLyricLines.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center select-none">
-        <span className="text-[18px] text-white/40">
+        <span className="text-[18px] text-[var(--dynamic-text-tertiary)]">
           纯音乐，请欣赏
         </span>
       </div>

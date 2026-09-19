@@ -64,14 +64,14 @@ export default function ProgressBar() {
     <div
       ref={barRef}
       className="relative w-full h-[2px] select-none"
-      style={{ backgroundColor: 'rgba(255, 255, 255, 0.14)' }}
+      style={{ backgroundColor: 'var(--overlay-15)' }}
     >
       {/* 实际播放进度条 */}
       <div
         className="h-full pointer-events-none transition-all duration-75"
         style={{
           width: `${displayPercent}%`,
-          backgroundColor: 'var(--dynamic-accent, #ffffff)',
+          backgroundColor: 'var(--dynamic-accent, var(--text-primary))',
         }}
       />
 

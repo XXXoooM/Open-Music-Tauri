@@ -4,6 +4,20 @@ import App from './App';
 import { isWeb } from './env';
 import { useSettingsStore } from './stores/settingsStore';
 
+// 过滤 AMLL 内部过于频繁的调试日志（如 [AMLL]、设置歌词行、歌词处理完成）
+const filterAmllLogs = (orig: (...args: unknown[]) => void) => (...args: unknown[]) => {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('[AMLL]') || args[0].includes('设置歌词') || args[0].includes('歌词处理'))
+  ) {
+    return;
+  }
+  orig.apply(console, args);
+};
+console.log = filterAmllLogs(console.log);
+console.debug = filterAmllLogs(console.debug);
+console.info = filterAmllLogs(console.info);
+
 // Service Worker 注册（仅 Web 环境生效，Tauri 桌面端跳过）
 if (isWeb && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

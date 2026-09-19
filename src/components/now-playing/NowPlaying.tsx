@@ -33,7 +33,7 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
       className={`fixed inset-0 flex flex-col justify-between select-none overflow-hidden transition-[opacity,transform,filter] duration-[var(--duration-page)] ease-[var(--ease-apple)] ${
         isOpen ? 'opacity-100 scale-100 blur-0 pointer-events-auto' : 'opacity-0 scale-100 blur-[8px] pointer-events-none'
       }`}
-      style={{ zIndex: 100, backgroundColor: 'var(--dynamic-bg-base, #081612)' }}
+      style={{ zIndex: 100, backgroundColor: 'var(--dynamic-bg-base)' }}
     >
       <DynamicBackground />
 
@@ -42,7 +42,7 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
         <button
           type="button"
           onClick={onClose}
-          className="no-drag p-1.5 cursor-pointer text-white/70 hover:text-white transition-opacity"
+          className="no-drag p-1.5 cursor-pointer text-[var(--dynamic-text-secondary)] hover:text-[var(--dynamic-text-primary)] transition-opacity"
         >
           <ChevronDown className="w-[24px] h-[24px]" />
         </button>
@@ -52,21 +52,21 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
             <button
               type="button"
               onClick={() => void getCurrentWindow().minimize()}
-              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-white/60 hover:text-white transition-opacity"
+              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--dynamic-text-secondary)] hover:text-[var(--dynamic-text-primary)] transition-opacity"
             >
               <Minus className="w-[14px] h-[14px]" />
             </button>
             <button
               type="button"
               onClick={() => void getCurrentWindow().toggleMaximize()}
-              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-white/60 hover:text-white transition-opacity"
+              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--dynamic-text-secondary)] hover:text-[var(--dynamic-text-primary)] transition-opacity"
             >
               <Square className="w-[13px] h-[13px]" />
             </button>
             <button
               type="button"
               onClick={() => void getCurrentWindow().close()}
-              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-white/60 hover:text-white hover:text-[rgb(255,69,58)] transition-all"
+              className="w-[26px] h-[26px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--dynamic-text-secondary)] hover:text-[var(--accent)] transition-all"
             >
               <X className="w-[14px] h-[14px]" />
             </button>
@@ -81,7 +81,7 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
 
           <div className="mt-[24px] max-w-full">
             <h1
-              className="font-bold truncate leading-tight tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]"
+              className="font-bold truncate leading-tight tracking-tight text-[var(--dynamic-text-primary)] drop-shadow-[0_2px_12px_var(--dynamic-overlay)]"
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(36px, 3.6vw, 48px)',
@@ -91,19 +91,19 @@ export default function NowPlaying({ isOpen, onClose }: NowPlayingProps) {
             </h1>
 
             {subtitle && (
-              <p className="text-[17px] mt-[6px] truncate font-medium text-white/65">
+              <p className="text-[17px] mt-[6px] truncate font-medium text-[var(--dynamic-text-secondary)]">
                 {subtitle}
               </p>
             )}
 
             <div className="mt-[12px] flex flex-col gap-[6px]">
-              <div className="flex items-center text-[13px] tracking-wide truncate text-white/45">
+              <div className="flex items-center text-[13px] tracking-wide truncate text-[var(--dynamic-text-tertiary)]">
                 <User className="w-[13px] h-[13px] mr-[7px] shrink-0 opacity-70" />
                 <span className="truncate">{track?.artist ?? '未知歌手'}</span>
               </div>
 
               {track?.album && (
-                <div className="flex items-center text-[13px] tracking-wide truncate text-white/45">
+                <div className="flex items-center text-[13px] tracking-wide truncate text-[var(--dynamic-text-tertiary)]">
                   <Disc className="w-[13px] h-[13px] mr-[7px] shrink-0 opacity-70" />
                   <span className="truncate">{track.album}</span>
                 </div>

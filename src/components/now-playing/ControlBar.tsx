@@ -31,7 +31,7 @@ export default function ControlBar() {
           onClick={() => currentTrack && toggleFavorite(currentTrack.id)}
           className="cursor-pointer p-2 transition-transform hover:scale-110 active:scale-90 select-none"
           style={{
-            color: isFav ? 'var(--accent)' : 'rgba(255, 255, 255, 0.75)',
+            color: isFav ? 'var(--accent)' : 'var(--dynamic-text-secondary)',
           }}
         >
           <Heart className={`w-[22px] h-[22px] ${isFav ? 'fill-current' : ''}`} />
@@ -41,7 +41,7 @@ export default function ControlBar() {
         <button
           type="button"
           onClick={togglePlay}
-          className="cursor-pointer p-2 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 text-white"
+          className="cursor-pointer p-2 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 text-[var(--dynamic-text-primary)]"
         >
           {isPlaying ? (
             <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
@@ -56,7 +56,7 @@ export default function ControlBar() {
         </button>
 
         {/* 右：当前时间 / 剩余时间倒计时（例如 3:28 / -1:09） */}
-        <span className="text-[13px] tabular-nums font-medium tracking-wider text-white/45">
+        <span className="text-[13px] tabular-nums font-medium tracking-wider text-[var(--dynamic-text-tertiary)]">
           {formatTime(progress)} / -{formatTime(remaining)}
         </span>
       </div>

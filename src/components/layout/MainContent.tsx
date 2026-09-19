@@ -62,8 +62,7 @@ export default function MainContent() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索歌曲、歌手、专辑..."
               autoFocus
-              className="w-full h-[36px] pl-[36px] pr-[12px] rounded-[var(--radius-md)] text-[14px] text-[var(--text-primary)] outline-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
-              style={{ background: 'rgba(255, 255, 255, 0.06)' }}
+              className="w-full h-[36px] pl-[36px] pr-[12px] rounded-[var(--radius-md)] text-[14px] text-[var(--text-primary)] outline-none bg-[var(--hover)] transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
             />
           </div>
         </div>

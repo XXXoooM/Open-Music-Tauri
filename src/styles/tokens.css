@@ -23,6 +23,7 @@
     --color-fg-primary: rgba(255, 255, 255, 0.95);
     --color-fg-secondary: rgba(255, 255, 255, 0.62);
     --color-fg-tertiary: rgba(255, 255, 255, 0.38);
+    --color-fg-inverse: #000000;
 
     /* --- 表面（材质） --- */
     --color-surface-sidebar: rgba(28, 28, 30, 0.22);
@@ -96,6 +97,7 @@
     --text-primary: var(--color-fg-primary);
     --text-secondary: var(--color-fg-secondary);
     --text-tertiary: var(--color-fg-tertiary);
+    --text-inverse: var(--color-fg-inverse);
 
     /* 材质 */
     --material-sidebar: var(--color-surface-sidebar);
@@ -114,6 +116,7 @@
     --overlay-25: var(--color-overlay-25);
 
     /* 动态值 —— 运行时由 useDynamicColor hook 覆盖 */
+    --dynamic-bg-base: #081612;
     --dynamic-gradient: radial-gradient(circle at 30% 30%,
             #1a1c2e 0%,
             #07080d 100%);

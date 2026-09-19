@@ -103,7 +103,7 @@ textarea::placeholder {
 
 .rnp-paused,
 .rnp-paused .rnp-fluid-canvas {
-  animation-play-state: paused !important;
+  animation-play-state: paused;
 }
 
 /* AMLL (Apple Music Like Lyrics) 沉浸播放页样式适配 */
@@ -115,7 +115,7 @@ textarea::placeholder {
   --amll-lp-font-size: clamp(34px, 3.2vw, 46px);
   --amll-lp-line-padding-x: 0px;
   --amll-lp-hover-bg-color: transparent;
-  --amll-lp-color: #ffffff;
+  --amll-lp-color: var(--dynamic-text-primary, var(--text-primary));
 }
 
 /* 歌词行间距增加呼吸感，完美对齐 Refined Now Playing */
