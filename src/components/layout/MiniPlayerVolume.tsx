@@ -122,12 +122,12 @@ export default function MiniPlayerVolume() {
         </div>
       )}
 
-      {/* 音量图标主按钮（强调色已取消） */}
+      {/* 音量图标主按钮（取消深灰色，提升为正常次级文字色） */}
       <button
         type="button"
         aria-label={isMuted ? '取消静音' : '静音'}
         onClick={toggleMute}
-        className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+        className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
         {isMuted || volume === 0 ? (
           <VolumeX className="w-[18px] h-[18px] shrink-0" />

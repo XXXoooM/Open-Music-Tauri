@@ -66,11 +66,14 @@ export default function MiniPlayer({
       {/* Center: 控制按钮群与交互进度条 (40%) */}
       <div data-mini-player-center className="w-[40%] min-w-0 flex flex-col items-center justify-center gap-[2px]">
         <div className="flex items-center justify-center gap-[20px]">
+          {/* 左侧 18px 预留位：保持播放按钮绝对居中对称（待办：待确定功能后填充） */}
+          <div className="w-[18px] h-[18px] shrink-0 pointer-events-none" aria-hidden="true" />
+
           <button
             type="button"
             aria-label="上一首"
             onClick={prev}
-            className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
           >
             <SkipBack className="w-[18px] h-[18px] shrink-0" />
           </button>
@@ -92,20 +95,20 @@ export default function MiniPlayer({
             type="button"
             aria-label="下一首"
             onClick={next}
-            className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
           >
             <SkipForward className="w-[18px] h-[18px] shrink-0" />
           </button>
 
-          {/* 模式合一切换按钮（顺序循环/单曲循环/随机播放，无彩色） */}
+          {/* 模式合一切换按钮（亮色层级提升，取消深灰色） */}
           <button
             type="button"
             aria-label={currentMode.label}
             title={currentMode.label}
             onClick={() => setPlayMode(currentMode.next)}
-            className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
+            className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-primary)]"
             style={{
-              color: playMode !== 'list-loop' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+              color: playMode !== 'list-loop' ? 'var(--text-primary)' : 'var(--text-secondary)',
             }}
           >
             <ModeIcon className="w-[18px] h-[18px] shrink-0" />
@@ -115,14 +118,14 @@ export default function MiniPlayer({
         <MiniPlayerProgress />
       </div>
 
-      {/* Right: 功能区 (30%，无彩色) */}
+      {/* Right: 功能区 (30%，默认亮色提升，取消深灰色) */}
       <div data-mini-player-right className="w-[30%] min-w-0 flex items-center justify-end gap-[16px]">
         <button
           type="button"
           aria-label="歌词与全屏播放"
           onClick={onToggleNowPlaying}
-          className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
-          style={{ color: isNowPlayingOpen ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
+          className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-primary)]"
+          style={{ color: isNowPlayingOpen ? 'var(--text-primary)' : 'var(--text-secondary)' }}
         >
           <Mic2 className="w-[18px] h-[18px] shrink-0" />
         </button>
@@ -133,8 +136,8 @@ export default function MiniPlayer({
           type="button"
           aria-label="待播清单"
           onClick={onToggleQueue}
-          className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
-          style={{ color: isQueueOpen ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
+          className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-primary)]"
+          style={{ color: isQueueOpen ? 'var(--text-primary)' : 'var(--text-secondary)' }}
         >
           <ListMusic className="w-[18px] h-[18px] shrink-0" />
         </button>
