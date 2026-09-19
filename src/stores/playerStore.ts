@@ -56,6 +56,8 @@ interface PlayerState {
   toggleFavorite(id: string): void;
   isFavorite(id: string): boolean;
   loadFavorites(): Promise<void>;
+  removeFromQueue(index: number): void;
+  clearQueue(): void;
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
@@ -267,6 +269,32 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     } catch (e) {
       console.warn('Failed to load favoriteIds from storage:', e);
     }
+  },
+
+  removeFromQueue: (index: number): void => {
+    const { playlist, currentTrackIndex, playAt } = get();
+    if (index < 0 || index >= playlist.length) return;
+    if (playlist.length <= 1) {
+      set({ playlist: [], currentTrackIndex: 0, isPlaying: false, progress: 0 });
+      return;
+    }
+    const nextPlaylist = playlist.filter((_, i) => i !== index);
+    if (index < currentTrackIndex) {
+      set({ playlist: nextPlaylist, currentTrackIndex: currentTrackIndex - 1 });
+    } else if (index === currentTrackIndex) {
+      const nextIndex = Math.min(index, nextPlaylist.length - 1);
+      set({ playlist: nextPlaylist, currentTrackIndex: nextIndex });
+      playAt(nextIndex);
+    } else {
+      set({ playlist: nextPlaylist });
+    }
+  },
+
+  clearQueue: (): void => {
+    const { playlist, currentTrackIndex } = get();
+    if (playlist.length <= 1) return;
+    const nextPlaylist = playlist.slice(0, currentTrackIndex + 1);
+    set({ playlist: nextPlaylist });
   },
 }));
 

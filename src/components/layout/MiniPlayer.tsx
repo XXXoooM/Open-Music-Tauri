@@ -1,4 +1,4 @@
-import { Repeat, Repeat1, Shuffle, SkipBack, Play, Pause, SkipForward, Mic2, ListMusic } from 'lucide-react';
+import { Heart, Repeat, Repeat1, Shuffle, SkipBack, Play, Pause, SkipForward, Mic2, ListMusic } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import MiniPlayerProgress from './MiniPlayerProgress';
@@ -17,17 +17,14 @@ const MODE_MAP = {
   'shuffle': { next: 'list-loop' as const, label: '随机播放', Icon: Shuffle },
 };
 
-export default function MiniPlayer({
-  isNowPlayingOpen,
-  onToggleNowPlaying,
-  isQueueOpen,
-  onToggleQueue,
-}: MiniPlayerProps) {
+export default function MiniPlayer({ isNowPlayingOpen, onToggleNowPlaying, isQueueOpen, onToggleQueue }: MiniPlayerProps) {
   const track = usePlayerStore((s) => s.playlist[s.currentTrackIndex]);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
+  const isFav = usePlayerStore((s) => (track ? s.favoriteIds.includes(track.id) : false));
+  const toggleFavorite = usePlayerStore((s) => s.toggleFavorite);
   const playMode = useSettingsStore((s) => s.playMode);
   const setPlayMode = useSettingsStore((s) => s.setPlayMode);
 
@@ -48,26 +45,28 @@ export default function MiniPlayer({
         className="w-[30%] min-w-0 flex items-center gap-[12px] text-left cursor-pointer group select-none p-[4px] -ml-[4px] rounded-[var(--radius-md)] hover:bg-[var(--hover)] transition-colors duration-[var(--duration-hover)]"
       >
         <div className="w-[48px] h-[48px] shrink-0 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--hover)] group-hover:opacity-90 transition-opacity duration-[var(--duration-hover)] ease-[var(--ease-apple)]">
-          {track?.pic ? (
-            <img src={track.pic} alt={track.name} className="w-full h-full object-cover" draggable={false} />
-          ) : null}
+          {track?.pic ? <img src={track.pic} alt={track.name} className="w-full h-full object-cover" draggable={false} /> : null}
         </div>
-
         <div className="flex flex-col min-w-0 gap-[2px]">
-          <span className="text-[14px] font-medium text-[var(--text-primary)] truncate-1">
-            {track?.name ?? '未在播放'}
-          </span>
-          <span className="text-[12px] text-[var(--text-secondary)] truncate-1">
-            {track?.artist ?? '请选择歌曲'}
-          </span>
+          <span className="text-[14px] font-medium text-[var(--text-primary)] truncate-1">{track?.name ?? '未在播放'}</span>
+          <span className="text-[12px] text-[var(--text-secondary)] truncate-1">{track?.artist ?? '请选择歌曲'}</span>
         </div>
       </button>
 
       {/* Center: 控制按钮群与交互进度条 (40%) */}
       <div data-mini-player-center className="w-[40%] min-w-0 flex flex-col items-center justify-center gap-[2px]">
         <div className="flex items-center justify-center gap-[20px]">
-          {/* 左侧 18px 预留位：保持播放按钮绝对居中对称（待办：待确定功能后填充） */}
-          <div className="w-[18px] h-[18px] shrink-0 pointer-events-none" aria-hidden="true" />
+          {/* 左侧收藏按钮（18px，与右侧模式切换保持绝对轴对称） */}
+          <button
+            type="button"
+            disabled={!track}
+            aria-label={isFav ? '取消收藏' : '收藏歌曲'}
+            onClick={() => track && toggleFavorite(track.id)}
+            className="cursor-pointer select-none transition-transform duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ color: isFav ? 'var(--accent)' : 'var(--text-secondary)' }}
+          >
+            <Heart className={`w-[18px] h-[18px] shrink-0 ${isFav ? 'fill-current' : ''}`} />
+          </button>
 
           <button
             type="button"
@@ -84,8 +83,8 @@ export default function MiniPlayer({
             aria-label={isPlaying ? '暂停' : '播放'}
             className="w-[44px] h-[44px] rounded-[var(--radius-full)] shrink-0 flex items-center justify-center cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
             style={{
-              backgroundColor: isPlaying ? 'var(--text-primary)' : 'var(--overlay-15)',
-              color: isPlaying ? 'var(--text-inverse)' : 'var(--text-secondary)',
+              backgroundColor: isPlaying ? 'var(--player-btn-active-bg, var(--text-primary))' : 'var(--overlay-15)',
+              color: isPlaying ? 'var(--player-btn-active-fg, var(--text-inverse))' : 'var(--text-secondary)',
             }}
           >
             {isPlaying ? <Pause className="w-[20px] h-[20px]" /> : <Play className="w-[20px] h-[20px] ml-[2px] fill-current" />}
@@ -100,16 +99,14 @@ export default function MiniPlayer({
             <SkipForward className="w-[18px] h-[18px] shrink-0" />
           </button>
 
-          {/* 模式合一切换按钮（亮色层级提升，取消深灰色） */}
+          {/* 模式合一切换按钮 */}
           <button
             type="button"
             aria-label={currentMode.label}
             title={currentMode.label}
             onClick={() => setPlayMode(currentMode.next)}
             className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-primary)]"
-            style={{
-              color: playMode !== 'list-loop' ? 'var(--text-primary)' : 'var(--text-secondary)',
-            }}
+            style={{ color: playMode !== 'list-loop' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
           >
             <ModeIcon className="w-[18px] h-[18px] shrink-0" />
           </button>
@@ -118,7 +115,7 @@ export default function MiniPlayer({
         <MiniPlayerProgress />
       </div>
 
-      {/* Right: 功能区 (30%，默认亮色提升，取消深灰色) */}
+      {/* Right: 功能区 (30%) */}
       <div data-mini-player-right className="w-[30%] min-w-0 flex items-center justify-end gap-[16px]">
         <button
           type="button"
