@@ -1,4 +1,4 @@
-import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Mic2, ListMusic } from 'lucide-react';
+import { Repeat, Repeat1, Shuffle, SkipBack, Play, Pause, SkipForward, Mic2, ListMusic } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import MiniPlayerProgress from './MiniPlayerProgress';
@@ -10,6 +10,12 @@ interface MiniPlayerProps {
   isQueueOpen: boolean;
   onToggleQueue(): void;
 }
+
+const MODE_MAP = {
+  'list-loop': { next: 'single-loop' as const, label: '顺序循环', Icon: Repeat },
+  'single-loop': { next: 'shuffle' as const, label: '单曲循环', Icon: Repeat1 },
+  'shuffle': { next: 'list-loop' as const, label: '随机播放', Icon: Shuffle },
+};
 
 export default function MiniPlayer({
   isNowPlayingOpen,
@@ -24,6 +30,9 @@ export default function MiniPlayer({
   const prev = usePlayerStore((s) => s.prev);
   const playMode = useSettingsStore((s) => s.playMode);
   const setPlayMode = useSettingsStore((s) => s.setPlayMode);
+
+  const currentMode = MODE_MAP[playMode] ?? MODE_MAP['list-loop'];
+  const ModeIcon = currentMode.Icon;
 
   return (
     <footer
@@ -56,18 +65,7 @@ export default function MiniPlayer({
 
       {/* Center: 控制按钮群与交互进度条 (40%) */}
       <div data-mini-player-center className="w-[40%] min-w-0 flex flex-col items-center justify-center gap-[2px]">
-        {/* 控制按钮群 */}
         <div className="flex items-center justify-center gap-[20px]">
-          <button
-            type="button"
-            aria-label="随机播放"
-            onClick={() => setPlayMode(playMode === 'shuffle' ? 'list-loop' : 'shuffle')}
-            className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
-            style={{ color: playMode === 'shuffle' ? 'var(--accent)' : 'var(--text-tertiary)' }}
-          >
-            <Shuffle className="w-[18px] h-[18px] shrink-0" />
-          </button>
-
           <button
             type="button"
             aria-label="上一首"
@@ -99,31 +97,32 @@ export default function MiniPlayer({
             <SkipForward className="w-[18px] h-[18px] shrink-0" />
           </button>
 
+          {/* 模式合一切换按钮（顺序循环/单曲循环/随机播放，无彩色） */}
           <button
             type="button"
-            aria-label="循环播放"
-            onClick={() => setPlayMode(playMode === 'list-loop' ? 'single-loop' : 'list-loop')}
+            aria-label={currentMode.label}
+            title={currentMode.label}
+            onClick={() => setPlayMode(currentMode.next)}
             className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
             style={{
-              color: playMode === 'list-loop' || playMode === 'single-loop' ? 'var(--accent)' : 'var(--text-tertiary)',
+              color: playMode !== 'list-loop' ? 'var(--text-primary)' : 'var(--text-tertiary)',
             }}
           >
-            <Repeat className="w-[18px] h-[18px] shrink-0" />
+            <ModeIcon className="w-[18px] h-[18px] shrink-0" />
           </button>
         </div>
 
-        {/* 交互进度条子组件 */}
         <MiniPlayerProgress />
       </div>
 
-      {/* Right: 功能区 (30%) */}
+      {/* Right: 功能区 (30%，无彩色) */}
       <div data-mini-player-right className="w-[30%] min-w-0 flex items-center justify-end gap-[16px]">
         <button
           type="button"
           aria-label="歌词与全屏播放"
           onClick={onToggleNowPlaying}
           className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
-          style={{ color: isNowPlayingOpen ? 'var(--accent)' : 'var(--text-tertiary)' }}
+          style={{ color: isNowPlayingOpen ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
         >
           <Mic2 className="w-[18px] h-[18px] shrink-0" />
         </button>
@@ -135,7 +134,7 @@ export default function MiniPlayer({
           aria-label="待播清单"
           onClick={onToggleQueue}
           className="cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] hover:text-[var(--text-secondary)]"
-          style={{ color: isQueueOpen ? 'var(--accent)' : 'var(--text-tertiary)' }}
+          style={{ color: isQueueOpen ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
         >
           <ListMusic className="w-[18px] h-[18px] shrink-0" />
         </button>
