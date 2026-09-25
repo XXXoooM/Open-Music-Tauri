@@ -1,7 +1,7 @@
 import type { LyricLine } from '../types';
 
 const MAX_CACHE_SIZE = 100;
-const PERSIST_KEY_PREFIX = 'open_music_lyric_v2_';
+const PERSIST_KEY_PREFIX = 'open_music_lyric_v3_';
 const CIRCUIT_BREAKER_DURATION_MS = 30_000;
 
 // L1: 内存 LRU 缓存

@@ -12,6 +12,9 @@ export interface RawLyricsPayload {
   romalrc?: string;
 }
 
+/** 针对纯 LRC 逐行歌词因人工打轴滞后的前置时间补偿量（毫秒） */
+const LRC_LEAD_OFFSET_MS = 450;
+
 function tryParse(
   parser: (t: string) => AmllLyricLine[],
   text?: string
@@ -33,8 +36,8 @@ function extractText(line: AmllLyricLine): string {
 /**
  * 毫秒级高精度歌词对齐
  * - 网易云原生 tlyric（翻译）与 romalrc（罗马音）以标准 LRC 格式输出，与 lrc 具有完全一致的毫秒级时间戳
- * - 当存在 yrc（逐字）时：优先将译文与罗马音无缝映射给对应的 yrc 行
- * - 当不存在 yrc 时：直接以 lrc 为主轴，毫秒级点对点挂载
+ * - 当存在 yrc（逐字）时：保持声学模型原生时间轴（0ms 偏移），并将译文与罗马音无缝映射给对应的 yrc 行
+ * - 当不存在 yrc 时：以 lrc 为主轴，毫秒级点对点挂载译文/罗马音，并注入 450ms 智能提前量抵消人肉打轴滞后
  */
 export function mergeLyrics(payload: RawLyricsPayload): LyricLine[] {
   const lrcLines = tryParse(parseLrc, payload.lrc) ?? [];
@@ -53,13 +56,13 @@ export function mergeLyrics(payload: RawLyricsPayload): LyricLine[] {
     }
   }
 
-  // 2. 确定主轴：优先 YRC 逐字，若无则使用已对齐的 LRC 逐行
+  // 2. 确定主轴：优先 YRC 逐字，若无则使用已对齐并前置补偿的 LRC 逐行
   let baseLines = lrcLines;
   const yrcLines = tryParse(parseYrc, payload.yrc);
 
   if (yrcLines && yrcLines.length > 0) {
     if (yrcLines.length === lrcLines.length) {
-      // 绝大多数官方单曲 YRC 与 LRC 行数完全严格 1 对 1
+      // 官方单曲 YRC 与 LRC 行数完全严格 1 对 1
       for (let i = 0; i < yrcLines.length; i++) {
         yrcLines[i].translatedLyric = lrcLines[i].translatedLyric;
         yrcLines[i].romanLyric = lrcLines[i].romanLyric;
@@ -82,6 +85,18 @@ export function mergeLyrics(payload: RawLyricsPayload): LyricLine[] {
       }
     }
     baseLines = yrcLines;
+  } else {
+    // 纯 LRC 逐行歌词：提前 450ms 补偿人工打轴滞后，使人声开口瞬间即刻亮起换行
+    for (const l of lrcLines) {
+      l.startTime = Math.max(0, l.startTime - LRC_LEAD_OFFSET_MS);
+      l.endTime = Math.max(0, l.endTime - LRC_LEAD_OFFSET_MS);
+      if (l.words) {
+        for (const w of l.words) {
+          w.startTime = Math.max(0, w.startTime - LRC_LEAD_OFFSET_MS);
+          w.endTime = Math.max(0, w.endTime - LRC_LEAD_OFFSET_MS);
+        }
+      }
+    }
   }
 
   if (baseLines.length === 0) return [];

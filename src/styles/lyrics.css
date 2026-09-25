@@ -1,6 +1,6 @@
 /* ==========================================================================
    AMLL (Apple Music Like Lyrics) 沉浸播放页样式适配
-   主歌词 + 罗马音 + 翻译歌词三级排版与视觉微景深优化
+   主歌词 + 罗马音 + 翻译歌词三级排版与 Refined 柔光漫反射特效
    ========================================================================== */
 
 .amll-lyric-player {
@@ -32,16 +32,16 @@
   order: 1;
 }
 
-/* 2. 罗马音（children 3）：置于翻译歌词上方，字号适度缩小，但字体、字重与排版风格完全一致 */
+/* 2. 罗马音（children 3）：置于主歌词与翻译歌词之间，字号调至 0.65em，保持优美比例 */
 .amll-lyric-player [class*="lyricSubLine"]:nth-child(3) {
   order: 2;
-  font-size: 0.52em;
+  font-size: 0.65em;
   line-height: 1.35;
-  opacity: 0.72;
+  opacity: 0.78;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  margin-top: 0.15em;
-  margin-bottom: 0.15em;
+  letter-spacing: 0.015em;
+  margin-top: 0.18em;
+  margin-bottom: 0.18em;
 }
 
 /* 3. 翻译歌词（children 2）：置于罗马音下方，字号与主歌词完全一致（1em），保持同等粗细与通透度 */
@@ -49,13 +49,29 @@
   order: 3;
   font-size: 1em;
   line-height: 1.35;
-  opacity: 0.92;
+  opacity: 0.95;
   font-weight: 700;
   letter-spacing: -0.015em;
-  margin-top: 0.2em;
+  margin-top: 0.22em;
 }
 
 /* 空内容时隐藏，不占用纵向空间 */
 .amll-lyric-player [class*="lyricSubLine"]:empty {
   display: none;
+}
+
+/* 4. Refined Now Playing 标志性激活行柔光漫反射（Bloom Glow 视觉特效） */
+.amll-lyric-player [class*="lyricMainLine"],
+.amll-lyric-player [class*="lyricSubLine"] {
+  transition: text-shadow 0.35s var(--ease-apple), opacity 0.3s var(--ease-apple);
+}
+
+.amll-lyric-player [class*="active"] [class*="lyricMainLine"],
+.amll-lyric-player [class*="active"] [class*="lyricSubLine"]:nth-child(2) {
+  text-shadow: 0 0 16px var(--lyric-text-glow),
+               0 0 32px var(--lyric-text-glow-soft);
+}
+
+.amll-lyric-player [class*="active"] [class*="lyricSubLine"]:nth-child(3) {
+  text-shadow: 0 0 12px var(--lyric-text-glow-soft);
 }
