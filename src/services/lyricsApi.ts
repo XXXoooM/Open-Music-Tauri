@@ -1,124 +1,135 @@
-import {
-  parseLrc,
-  parseYrc,
-  type LyricLine as AmllLyricLine,
-} from '@applemusic-like-lyrics/lyric';
+import { invoke } from '@tauri-apps/api/core';
 import type { LyricLine } from '../types';
+import {
+  getCachedLyrics,
+  setCachedLyrics,
+  tripCircuitBreaker,
+  isCircuitBreakerTripped,
+} from './lyricsCache';
+import { mergeLyrics, parseLyrics, type RawLyricsPayload } from './lyricsMerger';
 
-const VKEYS_LYRIC_API = (songId: string): string =>
-  `https://api.vkeys.cn/v2/music/netease/lyric?id=${songId}`;
-
-/**
- * 解析歌词文本，自动检测格式
- * - 优先尝试 YRC（逐词格式）
- * - 失败则回退 LRC（逐行格式）
- * @param text 原始歌词文本
- * @returns 转换后的 LyricLine 数组（时间单位转换为秒，并保留 _amllRaw）
- */
-export function parseLyrics(text: string): LyricLine[] {
-  const tryParse = (
-    parser: (t: string) => AmllLyricLine[]
-  ): AmllLyricLine[] | null => {
-    try {
-      const parsed = parser(text);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    } catch {
-      // 忽略解析错误，尝试下一种格式
-    }
-    return null;
-  };
-
-  // 优先尝试 YRC（逐词），失败则回退 LRC（逐行）
-  const amllLines = tryParse(parseYrc) ?? tryParse(parseLrc);
-
-  if (!amllLines) {
-    return [];
-  }
-
-  // 转换为项目内部的 LyricLine 格式
-  return amllLines.map((line) => ({
-    time: line.startTime / 1000, // 毫秒 → 秒
-    text: line.words?.map((w) => w.word).join('') ?? '',
-    translation: line.translatedLyric || undefined,
-    romaji: line.romanLyric || undefined,
-    words:
-      line.words && line.words.length > 0
-        ? line.words.map((w) => ({
-            word: w.word,
-            startTime: w.startTime / 1000,
-            endTime: w.endTime / 1000,
-          }))
-        : undefined,
-    // 保留原始 AMLL 行数据，供 LyricPlayer 使用
-    _amllRaw: line,
-  }));
-}
-
-/** 兼容旧版命名导出 */
+export { parseLyrics };
 export const parseLRC = parseLyrics;
 
-let activeAbortController: AbortController | null = null;
+const VKEYS_LYRIC_API = (id: string): string =>
+  `https://api.vkeys.cn/v2/music/netease/lyric?id=${id}`;
+const OFFICIAL_WEB_API = (id: string): string =>
+  `/api/netease/api/song/lyric?id=${id}&lv=1&kv=1&tv=1&yv=1&rv=1`;
+
+function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+}
+
+let activeController: AbortController | null = null;
+
+async function fetchFromOfficial(
+  songId: string,
+  signal: AbortSignal
+): Promise<LyricLine[] | null> {
+  if (isCircuitBreakerTripped()) return null;
+
+  try {
+    let rawJson: string;
+    if (isTauri()) {
+      rawJson = await invoke<string>('fetch_netease_lyrics', { songId });
+    } else {
+      const res = await fetch(OFFICIAL_WEB_API(songId), { signal });
+      if (res.status === 429 || res.status === 403) {
+        tripCircuitBreaker();
+        return null;
+      }
+      if (!res.ok) return null;
+      rawJson = await res.text();
+    }
+
+    if (signal.aborted) return null;
+    const data = JSON.parse(rawJson) as {
+      code?: number;
+      yrc?: { lyric?: string };
+      lrc?: { lyric?: string };
+      tlyric?: { lyric?: string };
+      romalrc?: { lyric?: string };
+    };
+
+    if (data.code !== 200) return null;
+
+    const payload: RawLyricsPayload = {
+      yrc: data.yrc?.lyric,
+      lrc: data.lrc?.lyric,
+      tlyric: data.tlyric?.lyric,
+      romalrc: data.romalrc?.lyric,
+    };
+
+    const lines = mergeLyrics(payload);
+    return lines.length > 0 ? lines : null;
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') throw err;
+    return null;
+  }
+}
+
+async function fetchFromVKeys(
+  songId: string,
+  signal: AbortSignal
+): Promise<LyricLine[] | null> {
+  try {
+    const res = await fetch(VKEYS_LYRIC_API(songId), { signal });
+    if (!res.ok) return null;
+
+    const json = (await res.json()) as {
+      code?: number;
+      data?: { yrc?: string; lrc?: string };
+    };
+
+    if (json.code !== 200 || !json.data) return null;
+
+    const lines = mergeLyrics({ yrc: json.data.yrc, lrc: json.data.lrc });
+    return lines.length > 0 ? lines : null;
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') throw err;
+    return null;
+  }
+}
 
 /**
- * 根据网易云歌曲 ID 获取歌词
- * 优先解析 YRC 逐字歌词，降级 LRC 逐行歌词
- * 配备 8 秒超时与切歌自动中断保护
+ * 获取指定歌曲的歌词
+ * 级联体系：L1/L2 缓存 -> Tier 1 网易云原生接口 -> Tier 2 VKeys 代理 -> 兜底
  */
 export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
   if (!songId) return [];
 
-  if (activeAbortController) {
-    activeAbortController.abort();
-  }
+  // 1. 缓存快查（命中则 0ms 瞬间返回）
+  const cached = getCachedLyrics(songId);
+  if (cached) return cached;
 
+  // 2. 取消前序切歌在途请求
+  if (activeController) activeController.abort();
   const controller = new AbortController();
-  activeAbortController = controller;
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  activeController = controller;
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
 
   try {
-    const res = await fetch(VKEYS_LYRIC_API(songId), { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) throw new Error(`VKeys API error: ${res.status}`);
-
-    const json: unknown = await res.json();
-    if (
-      typeof json !== 'object' ||
-      json === null ||
-      !('code' in json) ||
-      (json as { code: number }).code !== 200
-    ) {
-      throw new Error('VKeys API returned non-200 code');
+    // 3. 一级拉取：网易官方原生源（带 YRC、翻译与罗马音）
+    const officialLines = await fetchFromOfficial(songId, controller.signal);
+    if (officialLines && officialLines.length > 0) {
+      setCachedLyrics(songId, officialLines);
+      return officialLines;
     }
 
-    const data = (json as { data?: { yrc?: string; lrc?: string } }).data;
-    if (!data) throw new Error('VKeys API data missing');
-
-    // 优先 YRC 逐字
-    if (data.yrc && data.yrc.trim()) {
-      const parsed = parseLyrics(data.yrc);
-      if (parsed.length > 0) return parsed;
-    }
-
-    // 降级 LRC 逐行
-    if (data.lrc && data.lrc.trim()) {
-      const parsed = parseLyrics(data.lrc);
-      if (parsed.length > 0) return parsed;
+    // 4. 二级降级：VKeys 代理源
+    const fallbackLines = await fetchFromVKeys(songId, controller.signal);
+    if (fallbackLines && fallbackLines.length > 0) {
+      setCachedLyrics(songId, fallbackLines);
+      return fallbackLines;
     }
 
     return [];
   } catch (e) {
-    clearTimeout(timeoutId);
-    if (e instanceof Error && e.name === 'AbortError') {
-      return [];
-    }
+    if (e instanceof Error && e.name === 'AbortError') return [];
     console.warn('Lyrics fetch failed:', e);
     return [];
   } finally {
-    if (activeAbortController === controller) {
-      activeAbortController = null;
-    }
+    clearTimeout(timeoutId);
+    if (activeController === controller) activeController = null;
   }
 }
