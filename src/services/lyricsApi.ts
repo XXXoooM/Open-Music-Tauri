@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type { LyricLine } from '../types';
 import {
   getCachedLyrics,
+  getCachedLyricsAsync,
   setCachedLyrics,
   tripCircuitBreaker,
   isCircuitBreakerTripped,
@@ -96,7 +97,7 @@ async function fetchFromVKeys(
  */
 export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
   if (!songId) return [];
-  const cached = getCachedLyrics(songId);
+  const cached = getCachedLyrics(songId) ?? (await getCachedLyricsAsync(songId));
   if (cached) return cached;
 
   if (activeController) activeController.abort();
@@ -130,7 +131,7 @@ export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
  * 智能静默预取下一首歌词（低优先级，不中断当前播放请求）
  */
 export async function prefetchLyrics(songId: string): Promise<void> {
-  if (!songId || getCachedLyrics(songId)) return;
+  if (!songId || getCachedLyrics(songId) || (await getCachedLyricsAsync(songId))) return;
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 8000);

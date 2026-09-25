@@ -1,7 +1,9 @@
 /**
  * 全局统一多维缓存管理器 (Cache Manager)
- * 支持 L1 内存 LRU + L2 本地持久化双层存储、TTL 过期及容量统计
+ * 采用 L1 内存 LRU (0ms 同步) + L2 IndexedDB (海量异步持久化) 双层体系
  */
+import { idbGet, idbSet, idbDel, idbClear, idbStats } from '../utils/idbStorage';
+
 export const CACHE_PREFIX = 'om_cache_v3_';
 const MAX_MEM_ENTRIES = 200;
 
@@ -20,23 +22,28 @@ function evictOldestMemory(): void {
   }
 }
 
-function removeStorage(fullKey: string): void {
-  try {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(fullKey);
-  } catch {}
-}
+// 自动清理旧版 localStorage 残留，释放 Web/Tauri 配额
+try {
+  if (typeof localStorage !== 'undefined') {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(CACHE_PREFIX)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  }
+} catch {}
 
-/** 读取缓存（先 L1 内存，未命中则查 L2 本地存储） */
+/** 同步读取 L1 内存缓存 (0ms) */
 export function getCacheItem<T>(key: string): T | null {
   if (!key) return null;
   const fullKey = `${CACHE_PREFIX}${key}`;
   const now = Date.now();
-
   if (memoryCache.has(fullKey)) {
     const item = memoryCache.get(fullKey) as CacheEnvelope<T>;
     if (item.expireAt && item.expireAt < now) {
       memoryCache.delete(fullKey);
-      removeStorage(fullKey);
+      void idbDel(fullKey);
       return null;
     }
     item.lastAccessed = now;
@@ -44,83 +51,47 @@ export function getCacheItem<T>(key: string): T | null {
     memoryCache.set(fullKey, item as CacheEnvelope<unknown>);
     return item.value;
   }
-
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem(fullKey);
-      if (!raw) return null;
-      const envelope = JSON.parse(raw) as CacheEnvelope<T>;
-      if (envelope.expireAt && envelope.expireAt < now) {
-        localStorage.removeItem(fullKey);
-        return null;
-      }
-      envelope.lastAccessed = now;
-      evictOldestMemory();
-      memoryCache.set(fullKey, envelope as CacheEnvelope<unknown>);
-      return envelope.value;
-    }
-  } catch {}
   return null;
 }
 
-/** 写入缓存（同步写入 L1 内存与 L2 本地持久化） */
+/** 异步读取缓存（L1 内存未命中时穿透查 L2 IndexedDB 并回填） */
+export async function getCacheItemAsync<T>(key: string): Promise<T | null> {
+  const memHit = getCacheItem<T>(key);
+  if (memHit !== null) return memHit;
+  const fullKey = `${CACHE_PREFIX}${key}`;
+  const diskVal = await idbGet<T>(fullKey);
+  if (diskVal !== null) {
+    evictOldestMemory();
+    memoryCache.set(fullKey, { value: diskVal, lastAccessed: Date.now() });
+  }
+  return diskVal;
+}
+
+/** 同步写入 L1 内存，并异步持久化至 L2 IndexedDB */
 export function setCacheItem<T>(key: string, value: T, ttlMs?: number): void {
   if (!key || value === undefined || value === null) return;
   const fullKey = `${CACHE_PREFIX}${key}`;
   const now = Date.now();
-  const envelope: CacheEnvelope<T> = {
-    value,
-    expireAt: ttlMs && ttlMs > 0 ? now + ttlMs : undefined,
-    lastAccessed: now,
-  };
+  const expireAt = ttlMs && ttlMs > 0 ? now + ttlMs : undefined;
   evictOldestMemory();
-  memoryCache.set(fullKey, envelope as CacheEnvelope<unknown>);
-  try {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(fullKey, JSON.stringify(envelope));
-    }
-  } catch {}
+  memoryCache.set(fullKey, { value, expireAt, lastAccessed: now });
+  void idbSet(fullKey, value, expireAt);
 }
 
 /** 移除指定缓存项 */
 export function removeCacheItem(key: string): void {
   const fullKey = `${CACHE_PREFIX}${key}`;
   memoryCache.delete(fullKey);
-  removeStorage(fullKey);
+  void idbDel(fullKey);
 }
 
-/** 清空所有属于本应用前缀的缓存 */
-export function clearAllCaches(): void {
+/** 清空内存及 IndexedDB 缓存 */
+export async function clearAllCaches(): Promise<void> {
   memoryCache.clear();
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith(CACHE_PREFIX)) keysToRemove.push(k);
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-    }
-  } catch {}
+  await idbClear();
 }
 
-/** 获取当前持久化缓存统计（条目数与大致大小） */
-export function getCacheStats(): { count: number; sizeFormatted: string } {
-  let count = 0;
-  let totalBytes = 0;
-  try {
-    if (typeof localStorage !== 'undefined') {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith(CACHE_PREFIX)) {
-          count++;
-          const val = localStorage.getItem(k);
-          totalBytes += (k.length + (val ? val.length : 0)) * 2;
-        }
-      }
-    }
-  } catch {}
-  const kb = totalBytes / 1024;
-  const sizeFormatted = kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`;
-  return { count, sizeFormatted };
+/** 异步获取持久化缓存统计（项数与大小） */
+export async function getCacheStats(): Promise<{ count: number; sizeFormatted: string }> {
+  return idbStats();
 }

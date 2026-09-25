@@ -7,7 +7,11 @@ import {
   type RGB,
   type ThemeColors,
 } from '../utils/colorUtils';
-import { getCachedPalette, setCachedPalette } from '../services/paletteCache';
+import {
+  getCachedPalette,
+  getCachedPaletteAsync,
+  setCachedPalette,
+} from '../services/paletteCache';
 
 function hashColor(trackKey: string): ThemeColors {
   let hash = 0;
@@ -70,7 +74,7 @@ export function useDynamicColor(coverUrl: string, trackKey: string): void {
 
     async function run(): Promise<void> {
       if (coverUrl) {
-        const cached = getCachedPalette(coverUrl);
+        const cached = getCachedPalette(coverUrl) ?? (await getCachedPaletteAsync(coverUrl));
         if (cached) {
           if (!cancelled) applyThemeStyles(cached.theme, cached.gradient);
           return;

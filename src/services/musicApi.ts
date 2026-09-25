@@ -1,6 +1,10 @@
 import type { Track, ApiSource } from '../types';
 import { API_SOURCES } from './musicApiConfig';
-import { getCachedPlaylist, setCachedPlaylist } from './playlistCache';
+import {
+  getCachedPlaylist,
+  getCachedPlaylistAsync,
+  setCachedPlaylist,
+} from './playlistCache';
 
 export { API_SOURCES };
 export { getFallbackPlaylist } from './fallbackPlaylist';
@@ -62,7 +66,7 @@ export async function fetchPlaylist(
   playlistId: string,
   apiSource: ApiSource
 ): Promise<Track[]> {
-  const cached = getCachedPlaylist(playlistId);
+  const cached = getCachedPlaylist(playlistId) ?? (await getCachedPlaylistAsync(playlistId));
   try {
     const apiUrl = API_SOURCES[apiSource].buildUrl('playlist', playlistId);
     const response = await fetch(apiUrl);
