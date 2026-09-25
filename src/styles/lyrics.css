@@ -1,0 +1,61 @@
+/* ==========================================================================
+   AMLL (Apple Music Like Lyrics) 沉浸播放页样式适配
+   主歌词 + 罗马音 + 翻译歌词三级排版与视觉微景深优化
+   ========================================================================== */
+
+.amll-lyric-player {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  --amll-lp-font-size: clamp(34px, 3.2vw, 46px);
+  --amll-lp-line-padding-x: 0px;
+  --amll-lp-hover-bg-color: transparent;
+  --amll-lp-color: var(--dynamic-text-primary, var(--text-primary));
+}
+
+/* 歌词行间距增加呼吸感，对齐 Refined Now Playing */
+.amll-lyric-player .FmKaba_lyricLineWrapper {
+  padding-top: 0.85em;
+  padding-bottom: 0.85em;
+  gap: 0.35em;
+}
+
+/* 单行歌词纵向容器：主歌词置顶 -> 罗马音居中 -> 翻译歌词置底 */
+.amll-lyric-player [class*="lyricLine"] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 1. 主歌词（置顶） */
+.amll-lyric-player [class*="lyricMainLine"] {
+  order: 1;
+}
+
+/* 2. 罗马音（children 3）：置于翻译歌词上方，字号适度缩小，但字体、字重与排版风格完全一致 */
+.amll-lyric-player [class*="lyricSubLine"]:nth-child(3) {
+  order: 2;
+  font-size: 0.52em;
+  line-height: 1.35;
+  opacity: 0.72;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-top: 0.15em;
+  margin-bottom: 0.15em;
+}
+
+/* 3. 翻译歌词（children 2）：置于罗马音下方，字号与主歌词完全一致（1em），保持同等粗细与通透度 */
+.amll-lyric-player [class*="lyricSubLine"]:nth-child(2) {
+  order: 3;
+  font-size: 1em;
+  line-height: 1.35;
+  opacity: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 0.2em;
+}
+
+/* 空内容时隐藏，不占用纵向空间 */
+.amll-lyric-player [class*="lyricSubLine"]:empty {
+  display: none;
+}

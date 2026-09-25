@@ -26,68 +26,70 @@ function tryParse(
   return null;
 }
 
-/**
- * 将翻译或罗马音逐行时间戳（LRC 格式）智能模糊对齐至主歌词行（YRC/LRC）
- */
-function alignSubLyrics(
-  baseLines: AmllLyricLine[],
-  subText: string | undefined,
-  field: 'translatedLyric' | 'romanLyric'
-): void {
-  const subLines = tryParse(parseLrc, subText);
-  if (!subLines || subLines.length === 0) return;
-
-  let subIdx = 0;
-  for (const base of baseLines) {
-    const baseText = base.words ? base.words.map((w) => w.word).join('').trim() : '';
-    // 跳过开头过早出现的元数据署名行（作词/作曲等无需对齐译文）
-    if (
-      base.startTime < 3500 &&
-      (baseText.includes('作词') || baseText.includes('作曲') || baseText.includes('编曲'))
-    ) {
-      continue;
-    }
-
-    let bestSub: AmllLyricLine | null = null;
-    let bestDiff = 2000; // 最大允许 2.0s 误差窗口
-
-    for (let i = subIdx; i < subLines.length; i++) {
-      const sub = subLines[i];
-      const diff = Math.abs(sub.startTime - base.startTime);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        bestSub = sub;
-        subIdx = i;
-      } else if (sub.startTime > base.startTime + 2000) {
-        break;
-      }
-    }
-
-    if (bestSub) {
-      const text = bestSub.words ? bestSub.words.map((w) => w.word).join('') : '';
-      base[field] = text;
-    }
-  }
+function extractText(line: AmllLyricLine): string {
+  return line.words ? line.words.map((w) => w.word).join('').trim() : '';
 }
 
 /**
- * 将官方原生多轨歌词格式化对齐并转为应用 LyricLine 格式
+ * 毫秒级高精度歌词对齐
+ * - 网易云原生 tlyric（翻译）与 romalrc（罗马音）以标准 LRC 格式输出，与 lrc 具有完全一致的毫秒级时间戳
+ * - 当存在 yrc（逐字）时：优先将译文与罗马音无缝映射给对应的 yrc 行
+ * - 当不存在 yrc 时：直接以 lrc 为主轴，毫秒级点对点挂载
  */
 export function mergeLyrics(payload: RawLyricsPayload): LyricLine[] {
-  // 1. 优先尝试逐字 YRC，降级逐行 LRC
-  const amllLines =
-    tryParse(parseYrc, payload.yrc) ?? tryParse(parseLrc, payload.lrc);
+  const lrcLines = tryParse(parseLrc, payload.lrc) ?? [];
+  const transLines = tryParse(parseLrc, payload.tlyric) ?? [];
+  const romaLines = tryParse(parseLrc, payload.romalrc) ?? [];
 
-  if (!amllLines) return [];
+  // 1. 将翻译与罗马音与标准 LRC 进行毫秒级点对点对齐（误差 <= 60ms 考虑浮点四舍五入）
+  for (const l of lrcLines) {
+    const trans = transLines.find((t) => Math.abs(t.startTime - l.startTime) <= 60);
+    if (trans) {
+      l.translatedLyric = extractText(trans);
+    }
+    const roma = romaLines.find((r) => Math.abs(r.startTime - l.startTime) <= 60);
+    if (roma) {
+      l.romanLyric = extractText(roma);
+    }
+  }
 
-  // 2. 注入翻译与罗马音（如果有）
-  alignSubLyrics(amllLines, payload.tlyric, 'translatedLyric');
-  alignSubLyrics(amllLines, payload.romalrc, 'romanLyric');
+  // 2. 确定主轴：优先 YRC 逐字，若无则使用已对齐的 LRC 逐行
+  let baseLines = lrcLines;
+  const yrcLines = tryParse(parseYrc, payload.yrc);
 
-  // 3. 构造项目内部 LyricLine 结构
-  return amllLines.map((line) => ({
+  if (yrcLines && yrcLines.length > 0) {
+    if (yrcLines.length === lrcLines.length) {
+      // 绝大多数官方单曲 YRC 与 LRC 行数完全严格 1 对 1
+      for (let i = 0; i < yrcLines.length; i++) {
+        yrcLines[i].translatedLyric = lrcLines[i].translatedLyric;
+        yrcLines[i].romanLyric = lrcLines[i].romanLyric;
+      }
+    } else {
+      // 若出现极少数前置版权行差异，按文本相同或就近时间戳 (<500ms) 稳健匹配
+      for (const y of yrcLines) {
+        const yText = extractText(y);
+        const match = lrcLines.find((l) => {
+          const lText = extractText(l);
+          return (
+            (yText && lText && yText === lText) ||
+            Math.abs(y.startTime - l.startTime) <= 500
+          );
+        });
+        if (match) {
+          y.translatedLyric = match.translatedLyric;
+          y.romanLyric = match.romanLyric;
+        }
+      }
+    }
+    baseLines = yrcLines;
+  }
+
+  if (baseLines.length === 0) return [];
+
+  // 3. 构造项目内部 LyricLine 结构（保留 _amllRaw 供播放器渲染）
+  return baseLines.map((line) => ({
     time: line.startTime / 1000,
-    text: line.words?.map((w) => w.word).join('') ?? '',
+    text: extractText(line),
     translation: line.translatedLyric || undefined,
     romaji: line.romanLyric || undefined,
     words:
