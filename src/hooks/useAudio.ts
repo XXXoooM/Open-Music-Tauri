@@ -3,6 +3,7 @@ import { getPlayer } from '../services/player';
 import { fetchLyrics, prefetchLyrics } from '../services/lyricsApi';
 import { usePlayerStore } from '../stores/playerStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useLibraryStore } from '../stores/libraryStore';
 import { useMediaSession } from './useMediaSession';
 
 /**
@@ -20,12 +21,15 @@ export function useAudio(): void {
 
   const currentTrackId = usePlayerStore((s) => s.playlist[s.currentTrackIndex]?.id);
 
-  // 切歌时加载歌词
+  // 切歌时加载歌词与记录最近播放
   useEffect(() => {
     if (!currentTrackId) {
       usePlayerStore.getState().setLyrics([]);
       return;
     }
+    const currentTrack = usePlayerStore.getState().playlist[usePlayerStore.getState().currentTrackIndex];
+    if (currentTrack) useLibraryStore.getState().addRecentTrack(currentTrack);
+
     let cancelled = false;
     void (async () => {
       const lines = await fetchLyrics(currentTrackId);

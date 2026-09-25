@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { ListPlus, ListEnd, Heart, Copy } from 'lucide-react';
 import type { Track } from '../../types';
 import { usePlayerStore } from '../../stores/playerStore';
+import { useLibraryStore } from '../../stores/libraryStore';
 
 interface SongActionMenuProps {
   track: Track;
@@ -15,8 +16,8 @@ interface SongActionMenuProps {
 export default function SongActionMenu({ track, isOpen, onClose }: SongActionMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const enqueueTrack = usePlayerStore((s) => s.enqueueTrack);
-  const toggleFavorite = usePlayerStore((s) => s.toggleFavorite);
-  const isFavorite = usePlayerStore((s) => s.favoriteIds.includes(track.id));
+  const toggleFavorite = useLibraryStore((s) => s.toggleFavorite);
+  const isFavorite = useLibraryStore((s) => s.isFavorite(track.id));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -78,7 +79,7 @@ export default function SongActionMenu({ track, isOpen, onClose }: SongActionMen
       </button>
       <button
         type="button"
-        onClick={() => { toggleFavorite(track.id); onClose(); }}
+        onClick={() => { toggleFavorite(track); onClose(); }}
         className="flex items-center gap-[10px] w-full px-[12px] py-[8px] hover:bg-[var(--hover)] transition-colors cursor-pointer text-left"
       >
         <Heart className={`w-[15px] h-[15px] ${isFavorite ? 'text-[var(--accent)] fill-current' : 'text-[var(--text-secondary)]'}`} />

@@ -26,18 +26,12 @@ export default function BrowseView() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full overflow-y-auto px-[32px] pt-[24px] pb-[40px]">
-      <header className="mb-[24px] shrink-0">
-        <h1
-          className="text-[28px] font-bold text-[var(--text-primary)] tracking-tight"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          探索与排行榜
-        </h1>
-        <p className="text-[13px] text-[var(--text-secondary)] mt-[4px]">
+    <div className="flex flex-col w-full h-full overflow-y-auto px-[32px] pb-[40px]">
+      <div className="mb-[20px] shrink-0">
+        <p className="text-[13px] text-[var(--text-secondary)]">
           网易云音乐官方精选榜单与热门推荐
         </p>
-      </header>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[20px]">
         {TOPLISTS.map((item) => {

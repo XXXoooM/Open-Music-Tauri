@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Music, SearchX, AlertCircle } from 'lucide-react';
 import { usePlayerStore } from '../../stores/playerStore';
+import { useLibraryStore } from '../../stores/libraryStore';
 import SongListItem from './SongListItem';
 
 interface SongListProps {
@@ -12,8 +13,8 @@ export default function SongList({ searchQuery = '' }: SongListProps) {
   const currentTrackIndex = usePlayerStore((s) => s.currentTrackIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const playAt = usePlayerStore((s) => s.playAt);
-  const favoriteIds = usePlayerStore((s) => s.favoriteIds);
-  const toggleFavorite = usePlayerStore((s) => s.toggleFavorite);
+  const toggleFavorite = useLibraryStore((s) => s.toggleFavorite);
+  const isFavorite = useLibraryStore((s) => s.isFavorite);
   const isLoadingPlaylist = usePlayerStore((s) => s.isLoadingPlaylist);
   const playlistError = usePlayerStore((s) => s.playlistError);
 
@@ -93,9 +94,9 @@ export default function SongList({ searchQuery = '' }: SongListProps) {
             index={index}
             isCurrent={isCurrent}
             isPlaying={isPlaying}
-            isFavorite={favoriteIds.includes(track.id)}
+            isFavorite={isFavorite(track.id)}
             onPlay={() => playAt(targetIndex)}
-            onToggleFavorite={() => toggleFavorite(track.id)}
+            onToggleFavorite={() => toggleFavorite(track)}
           />
         );
       })}

@@ -10,6 +10,7 @@ import { useDynamicColor } from './hooks/useDynamicColor';
 import { useHotkeys } from './hooks/useHotkeys';
 import { usePlayerStore } from './stores/playerStore';
 import { useSettingsStore } from './stores/settingsStore';
+import { useLibraryStore } from './stores/libraryStore';
 
 export default function App() {
   // 全屏 NowPlaying 展开状态
@@ -24,17 +25,22 @@ export default function App() {
   // 1. 挂载音频引擎同步（全局一次）
   useAudio();
 
-  // 2. 订阅当前播放曲目信息
+  // 2. 挂载音乐库持久化水合
+  useEffect(() => {
+    void useLibraryStore.getState().loadLibrary();
+  }, []);
+
+  // 3. 订阅当前播放曲目信息
   const currentTrack = usePlayerStore(
     (s) => s.playlist[s.currentTrackIndex]
   );
   const coverUrl = currentTrack?.pic ?? '';
   const trackKey = currentTrack?.id ?? '';
 
-  // 3. 挂载动态主题色 Hook（随封面变动）
+  // 4. 挂载动态主题色 Hook（随封面变动）
   useDynamicColor(coverUrl, trackKey);
 
-  // 4. 首次歌单加载
+  // 5. 首次歌单加载
   const isHydrated = useSettingsStore((s) => s.isHydrated);
   const playlistId = useSettingsStore((s) => s.playlistId);
   const apiSource = useSettingsStore((s) => s.apiSource);

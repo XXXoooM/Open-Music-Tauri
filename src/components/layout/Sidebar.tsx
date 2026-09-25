@@ -1,11 +1,8 @@
 import { useState, type ComponentType } from 'react';
 import {
-  PlayCircle,
   Compass,
-  Search,
-  Music,
-  Disc,
-  User,
+  Heart,
+  Clock,
   ListMusic,
   Settings,
 } from 'lucide-react';
@@ -23,16 +20,13 @@ interface SidebarProps {
 }
 
 const mainNavItems: NavItem[] = [
-  { id: 'now-playing', label: '立即播放', icon: PlayCircle, view: 'songs' },
   { id: 'browse', label: '浏览', icon: Compass, view: 'browse' },
-  { id: 'search', label: '搜索', icon: Search, view: 'search' },
 ];
 
 const libraryNavItems: NavItem[] = [
-  { id: 'songs', label: '歌曲', icon: Music, view: 'songs' },
-  { id: 'albums', label: '专辑', icon: Disc, view: 'songs' },
-  { id: 'artists', label: '艺术家', icon: User, view: 'songs' },
-  { id: 'playlists', label: '播放列表', icon: ListMusic, view: 'songs' },
+  { id: 'favorites', label: '收藏歌曲', icon: Heart, view: 'favorites' },
+  { id: 'recent', label: '最近播放', icon: Clock, view: 'recent' },
+  { id: 'playlists', label: '我的歌单', icon: ListMusic, view: 'playlists' },
 ];
 
 export default function Sidebar({ onOpenSettings }: SidebarProps) {
@@ -43,8 +37,8 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const renderItem = (item: NavItem) => {
     const Icon = item.icon;
     const isActive =
-      item.view === activeView &&
-      (item.id === activeView || (activeView === 'songs' && (item.id === 'now-playing' || item.id === 'songs')));
+      item.view === activeView ||
+      (item.view === 'playlists' && activeView === 'playlist-detail');
     const isHovered = hoveredId === item.id;
 
     const bg = isActive ? 'var(--active)' : isHovered ? 'var(--hover)' : undefined;
