@@ -129,10 +129,6 @@
     --dynamic-glow: rgba(250, 45, 72, 0.6);
     --dynamic-fluid-filter: saturate(1.5) brightness(1.05);
 
-    /* 歌词激活行 Refined 柔光 Bloom 光晕令牌 */
-    --lyric-text-glow: rgba(255, 255, 255, 0.40);
-    --lyric-text-glow-soft: rgba(255, 255, 255, 0.20);
-
     /* 阴影 */
     --shadow-artwork: 0 20px 60px rgba(0, 0, 0, 0.5);
     --shadow-panel: -8px 0 32px rgba(0, 0, 0, 0.4);

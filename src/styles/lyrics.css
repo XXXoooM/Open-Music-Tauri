@@ -60,18 +60,3 @@
   display: none;
 }
 
-/* 4. Refined Now Playing 标志性激活行柔光漫反射（Bloom Glow 视觉特效） */
-.amll-lyric-player [class*="lyricMainLine"],
-.amll-lyric-player [class*="lyricSubLine"] {
-  transition: text-shadow 0.35s var(--ease-apple), opacity 0.3s var(--ease-apple);
-}
-
-.amll-lyric-player [class*="active"] [class*="lyricMainLine"],
-.amll-lyric-player [class*="active"] [class*="lyricSubLine"]:nth-child(2) {
-  text-shadow: 0 0 16px var(--lyric-text-glow),
-               0 0 32px var(--lyric-text-glow-soft);
-}
-
-.amll-lyric-player [class*="active"] [class*="lyricSubLine"]:nth-child(3) {
-  text-shadow: 0 0 12px var(--lyric-text-glow-soft);
-}
