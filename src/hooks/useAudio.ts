@@ -52,7 +52,14 @@ export function useAudio(): void {
   useEffect(() => {
     const player = getPlayer();
     const onTime = (d: { currentTime: number }) => usePlayerStore.getState().setProgress(d.currentTime);
-    const onDuration = (d: { duration: number }) => usePlayerStore.getState().setDuration(d.duration);
+    const onDuration = (d: { duration: number }) => {
+      const state = usePlayerStore.getState();
+      state.setDuration(d.duration);
+      const curr = state.playlist[state.currentTrackIndex];
+      if (curr && (!curr.duration || curr.duration <= 0) && d.duration > 0) {
+        curr.duration = Math.round(d.duration);
+      }
+    };
     const onEnded = () => usePlayerStore.getState().handleTrackEnded();
     const onError = (err: unknown) => {
       console.error('Audio playback error:', err);

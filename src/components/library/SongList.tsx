@@ -81,7 +81,9 @@ export default function SongList({ searchQuery = '' }: SongListProps) {
     <div className="flex flex-col gap-[2px] pb-[24px]">
       {filteredPlaylist.map((track, index) => {
         const realIndex = playlist.indexOf(track);
-        const isCurrent = realIndex === currentTrackIndex;
+        const isCurrent = playlist[currentTrackIndex]
+          ? String(playlist[currentTrackIndex]?.id) === String(track.id)
+          : false;
         const targetIndex = realIndex >= 0 ? realIndex : index;
 
         return (

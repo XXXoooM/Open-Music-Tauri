@@ -106,5 +106,14 @@ textarea::placeholder {
   animation-play-state: paused;
 }
 
+/* 播放中三柱律动跳跃波形 */
+@keyframes eq-bounce {
+  0%, 100% { height: 3px; }
+  50% { height: 13px; }
+}
+.animate-eq-1 { animation: eq-bounce 0.65s ease-in-out infinite alternate; }
+.animate-eq-2 { animation: eq-bounce 0.85s ease-in-out 0.2s infinite alternate; }
+.animate-eq-3 { animation: eq-bounce 0.75s ease-in-out 0.4s infinite alternate; }
+
 /* AMLL 沉浸歌词播放器样式规范 */
 @import "./lyrics.css";

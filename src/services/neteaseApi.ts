@@ -42,6 +42,8 @@ interface RawSong {
   artists?: Array<{ name: string }>;
   al?: { name?: string; picUrl?: string };
   album?: { name?: string; picUrl?: string };
+  dt?: number;
+  duration?: number;
 }
 
 /**
@@ -67,12 +69,15 @@ export async function searchSongs(keyword: string, apiSource: ApiSource): Promis
       const album = s.al?.name || s.album?.name || '未知专辑';
       const rawPic = s.al?.picUrl || s.album?.picUrl || '';
       const pic = rawPic ? (rawPic.includes('?') ? rawPic : `${rawPic}?param=500y500`) : '';
+      const rawDur = s.dt || s.duration;
+      const sec = rawDur ? (rawDur > 10000 ? Math.round(rawDur / 1000) : Math.round(rawDur)) : undefined;
       return {
         id: songId,
         name: s.name || '未知歌名',
         artist,
         album,
         pic,
+        duration: sec && sec > 0 ? sec : undefined,
         url: API_SOURCES[apiSource].buildUrl('url', songId),
         lrc: API_SOURCES[apiSource].buildUrl('lrc', songId),
       };

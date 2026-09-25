@@ -5,6 +5,7 @@ import {
   getCachedPlaylistAsync,
   setCachedPlaylist,
 } from './playlistCache';
+import { enrichTracksMetadata } from './metadataEnricher';
 
 export { API_SOURCES };
 export { getFallbackPlaylist } from './fallbackPlaylist';
@@ -39,6 +40,10 @@ interface RawApiTrack {
   title?: string;
   artist?: string;
   author?: string;
+  album?: string;
+  al?: { name?: string };
+  dt?: number;
+  duration?: number;
   url?: string;
   pic?: string;
   lrc?: string;
@@ -60,7 +65,7 @@ function extractTrackId(track: RawApiTrack): string {
 }
 
 /**
- * 从远程 API 拉取指定歌单的曲目列表（带本地缓存与网络异常兜底）
+ * 从远程 API 拉取指定歌单的曲目列表（带时长补齐与本地缓存）
  */
 export async function fetchPlaylist(
   playlistId: string,
@@ -75,16 +80,25 @@ export async function fetchPlaylist(
     const data: unknown = await response.json();
     if (Array.isArray(data) && data.length > 0) {
       const rawTracks = data as RawApiTrack[];
-      const tracks = rawTracks.map((track) => ({
-        id: extractTrackId(track),
-        name: track.name || track.title || '未知歌名',
-        artist: track.artist || track.author || '未知歌手',
-        url: normalizeUrl(track.url || '', apiSource),
-        pic: normalizeUrl(track.pic || '', apiSource),
-        lrc: normalizeUrl(track.lrc || '', apiSource),
-      }));
-      setCachedPlaylist(playlistId, tracks);
-      return tracks;
+      const tracks = rawTracks.map((track) => {
+        const rawDur = track.dt || track.duration;
+        const durSec = rawDur ? (rawDur > 10000 ? Math.round(rawDur / 1000) : Math.round(rawDur)) : undefined;
+        return {
+          id: extractTrackId(track),
+          name: track.name || track.title || '未知歌名',
+          artist: track.artist || track.author || '未知歌手',
+          album: track.album || track.al?.name || '',
+          duration: durSec && durSec > 0 ? durSec : undefined,
+          url: normalizeUrl(track.url || '', apiSource),
+          pic: normalizeUrl(track.pic || '', apiSource),
+          lrc: normalizeUrl(track.lrc || '', apiSource),
+        };
+      });
+
+      // 异步尝试补齐可能缺失的时长与专辑
+      const enriched = await enrichTracksMetadata(tracks);
+      setCachedPlaylist(playlistId, enriched);
+      return enriched;
     }
     throw new Error('API returned empty playlist');
   } catch (err) {
