@@ -58,6 +58,8 @@ interface PlayerState {
   loadFavorites(): Promise<void>;
   removeFromQueue(index: number): void;
   clearQueue(): void;
+  enqueueTrack(track: Track): void;
+  setPlaylistAndPlay(tracks: Track[], startIndex?: number): void;
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
@@ -295,6 +297,24 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     if (playlist.length <= 1) return;
     const nextPlaylist = playlist.slice(0, currentTrackIndex + 1);
     set({ playlist: nextPlaylist });
+  },
+
+  enqueueTrack: (track: Track): void => {
+    const { playlist } = get();
+    set({ playlist: [...playlist, track] });
+  },
+
+  setPlaylistAndPlay: (tracks: Track[], startIndex = 0): void => {
+    if (tracks.length === 0) return;
+    const safeIndex = startIndex >= 0 && startIndex < tracks.length ? startIndex : 0;
+    set({
+      playlist: tracks,
+      currentTrackIndex: safeIndex,
+      isPlaying: true,
+      progress: 0,
+      seekRequest: 0,
+      playlistError: null,
+    });
   },
 }));
 

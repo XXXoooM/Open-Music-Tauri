@@ -9,62 +9,56 @@ import {
   ListMusic,
   Settings,
 } from 'lucide-react';
+import { useNavigationStore, type ActiveView } from '../../stores/navigationStore';
 
 interface NavItem {
   id: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
+  view: ActiveView;
 }
 
 interface SidebarProps {
-  /** 打开设置面板 */
   onOpenSettings(): void;
 }
 
 const mainNavItems: NavItem[] = [
-  { id: 'now-playing', label: '立即播放', icon: PlayCircle },
-  { id: 'browse', label: '浏览', icon: Compass },
-  { id: 'search', label: '搜索', icon: Search },
+  { id: 'now-playing', label: '立即播放', icon: PlayCircle, view: 'songs' },
+  { id: 'browse', label: '浏览', icon: Compass, view: 'browse' },
+  { id: 'search', label: '搜索', icon: Search, view: 'search' },
 ];
 
 const libraryNavItems: NavItem[] = [
-  { id: 'songs', label: '歌曲', icon: Music },
-  { id: 'albums', label: '专辑', icon: Disc },
-  { id: 'artists', label: '艺术家', icon: User },
-  { id: 'playlists', label: '播放列表', icon: ListMusic },
+  { id: 'songs', label: '歌曲', icon: Music, view: 'songs' },
+  { id: 'albums', label: '专辑', icon: Disc, view: 'songs' },
+  { id: 'artists', label: '艺术家', icon: User, view: 'songs' },
+  { id: 'playlists', label: '播放列表', icon: ListMusic, view: 'songs' },
 ];
 
 export default function Sidebar({ onOpenSettings }: SidebarProps) {
-  const [activeId, setActiveId] = useState('now-playing');
+  const activeView = useNavigationStore((s) => s.activeView);
+  const setActiveView = useNavigationStore((s) => s.setActiveView);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const renderItem = (item: NavItem) => {
     const Icon = item.icon;
-    const isActive = activeId === item.id;
+    const isActive =
+      item.view === activeView &&
+      (item.id === activeView || (activeView === 'songs' && (item.id === 'now-playing' || item.id === 'songs')));
     const isHovered = hoveredId === item.id;
 
-    // 计算显示状态：激活 > 悬停 > 默认
-    const bg = isActive
-      ? 'var(--active)'
-      : isHovered
-        ? 'var(--hover)'
-        : undefined;
-    const color =
-      isActive || isHovered ? 'var(--text-primary)' : 'var(--text-secondary)';
+    const bg = isActive ? 'var(--active)' : isHovered ? 'var(--hover)' : undefined;
+    const color = isActive || isHovered ? 'var(--text-primary)' : 'var(--text-secondary)';
 
     return (
       <button
         key={item.id}
         type="button"
-        onClick={() => setActiveId(item.id)}
+        onClick={() => setActiveView(item.view)}
         onMouseEnter={() => setHoveredId(item.id)}
         onMouseLeave={() => setHoveredId(null)}
         className="flex items-center w-full h-[36px] px-[10px] gap-[10px] rounded-[var(--radius-sm)] text-[14px] cursor-pointer select-none transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)]"
-        style={{
-          backgroundColor: bg,
-          color,
-          fontWeight: isActive ? 600 : 500,
-        }}
+        style={{ backgroundColor: bg, color, fontWeight: isActive ? 600 : 500 }}
       >
         <Icon className="w-[18px] h-[18px] shrink-0" />
         <span className="truncate">{item.label}</span>

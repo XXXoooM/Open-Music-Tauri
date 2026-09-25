@@ -40,11 +40,43 @@ async fn fetch_netease_lyrics(song_id: String) -> Result<String, String> {
     Ok(text)
 }
 
+#[tauri::command]
+async fn fetch_netease_get(endpoint: String) -> Result<String, String> {
+    let url = if endpoint.starts_with("http") {
+        endpoint
+    } else {
+        format!("https://music.163.com{}", endpoint)
+    };
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let resp = client
+        .get(&url)
+        .header(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        )
+        .header("Referer", "https://music.163.com/")
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let status = resp.status();
+    if !status.is_success() {
+        return Err(format!("HTTP status error: {}", status));
+    }
+
+    let text = resp.text().await.map_err(|e| e.to_string())?;
+    Ok(text)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![fetch_netease_lyrics])
+        .invoke_handler(tauri::generate_handler![fetch_netease_lyrics, fetch_netease_get])
         .setup(|app| {
             // 开发环境启用日志
             if cfg!(debug_assertions) {
