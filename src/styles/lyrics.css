@@ -16,8 +16,8 @@
 
 /* 歌词行间距增加呼吸感，对齐 Refined Now Playing */
 .amll-lyric-player .FmKaba_lyricLineWrapper {
-  padding-top: 0.85em;
-  padding-bottom: 0.85em;
+  padding-top: 0.55em;
+  padding-bottom: 0.55em;
   gap: 0.35em;
 }
 

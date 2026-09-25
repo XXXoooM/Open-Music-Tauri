@@ -92,37 +92,29 @@ async function fetchFromVKeys(
 }
 
 /**
- * 获取指定歌曲的歌词
- * 级联体系：L1/L2 缓存 -> Tier 1 网易云原生接口 -> Tier 2 VKeys 代理 -> 兜底
+ * 获取指定歌曲的歌词（L1/L2 缓存 -> Tier 1 网易云原生 -> Tier 2 VKeys 兜底）
  */
 export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
   if (!songId) return [];
-
-  // 1. 缓存快查（命中则 0ms 瞬间返回）
   const cached = getCachedLyrics(songId);
   if (cached) return cached;
 
-  // 2. 取消前序切歌在途请求
   if (activeController) activeController.abort();
   const controller = new AbortController();
   activeController = controller;
   const timeoutId = setTimeout(() => controller.abort(), 6000);
 
   try {
-    // 3. 一级拉取：网易官方原生源（带 YRC、翻译与罗马音）
     const officialLines = await fetchFromOfficial(songId, controller.signal);
     if (officialLines && officialLines.length > 0) {
       setCachedLyrics(songId, officialLines);
       return officialLines;
     }
-
-    // 4. 二级降级：VKeys 代理源
     const fallbackLines = await fetchFromVKeys(songId, controller.signal);
     if (fallbackLines && fallbackLines.length > 0) {
       setCachedLyrics(songId, fallbackLines);
       return fallbackLines;
     }
-
     return [];
   } catch (e) {
     if (e instanceof Error && e.name === 'AbortError') return [];
@@ -132,4 +124,18 @@ export async function fetchLyrics(songId: string): Promise<LyricLine[]> {
     clearTimeout(timeoutId);
     if (activeController === controller) activeController = null;
   }
+}
+
+/**
+ * 智能静默预取下一首歌词（低优先级，不中断当前播放请求）
+ */
+export async function prefetchLyrics(songId: string): Promise<void> {
+  if (!songId || getCachedLyrics(songId)) return;
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const lines = (await fetchFromOfficial(songId, ctrl.signal)) ?? (await fetchFromVKeys(songId, ctrl.signal));
+    clearTimeout(timer);
+    if (lines && lines.length > 0) setCachedLyrics(songId, lines);
+  } catch {}
 }

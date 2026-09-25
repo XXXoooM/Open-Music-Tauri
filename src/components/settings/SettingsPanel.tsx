@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import SegmentedControl from '../ui/SegmentedControl';
 import Switch from '../ui/Switch';
 import Slider from '../ui/Slider';
+import CacheSection from './CacheSection';
 import { useSettingsStore } from '../../stores/settingsStore';
 
 interface SettingsPanelProps {
@@ -131,6 +132,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </div>
             </div>
           </section>
+
+          {/* 分区 4：缓存与存储 */}
+          <CacheSection />
         </div>
       </aside>
     </>

@@ -19,33 +19,24 @@ export interface PlayerEventMap {
  */
 class WebPlayer {
   private readonly audio: HTMLAudioElement;
+  private readonly preloadAudio: HTMLAudioElement;
   private readonly events = new Map<PlayerEvent, Set<(data: unknown) => void>>();
 
   constructor() {
     this.audio = new Audio();
+    this.audio.preload = 'auto';
+    this.preloadAudio = new Audio();
     this.bindEvents();
   }
 
   private bindEvents(): void {
     this.audio.addEventListener('timeupdate', () => {
-      this.emit('timeupdate', {
-        currentTime: this.audio.currentTime,
-        duration: this.audio.duration || 0,
-      });
+      this.emit('timeupdate', { currentTime: this.audio.currentTime, duration: this.audio.duration || 0 });
     });
-
-    this.audio.addEventListener('ended', () => {
-      this.emit('ended', undefined);
-    });
-
-    this.audio.addEventListener('error', (e) => {
-      this.emit('error', e);
-    });
-
+    this.audio.addEventListener('ended', () => this.emit('ended', undefined));
+    this.audio.addEventListener('error', (e) => this.emit('error', e));
     this.audio.addEventListener('durationchange', () => {
-      this.emit('durationchange', {
-        duration: this.audio.duration || 0,
-      });
+      this.emit('durationchange', { duration: this.audio.duration || 0 });
     });
   }
 
@@ -60,6 +51,16 @@ class WebPlayer {
       this.audio.load();
     }
     return this.audio.play();
+  }
+
+  /**
+   * 预加载下一首音频流头部
+   */
+  preload(url: string | null): void {
+    if (url && this.preloadAudio.src !== url) {
+      this.preloadAudio.src = url;
+      this.preloadAudio.preload = 'auto';
+    }
   }
 
   pause(): void {

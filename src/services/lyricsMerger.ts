@@ -13,7 +13,7 @@ export interface RawLyricsPayload {
 }
 
 /** 针对纯 LRC 逐行歌词因人工打轴滞后的前置时间补偿量（毫秒） */
-const LRC_LEAD_OFFSET_MS = 450;
+const LRC_LEAD_OFFSET_MS = 0;
 
 function tryParse(
   parser: (t: string) => AmllLyricLine[],
