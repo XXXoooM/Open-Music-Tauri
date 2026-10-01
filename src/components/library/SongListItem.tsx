@@ -64,7 +64,7 @@ export default function SongListItem({
       </div>
 
       {/* 歌名与歌手 */}
-      <div className="w-[38%] min-w-0 flex flex-col gap-[2px]">
+      <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
         <span
           className="text-[14px] font-medium truncate-1"
           style={{ color: isCurrent ? 'var(--dynamic-accent)' : 'var(--text-primary)' }}
@@ -74,48 +74,44 @@ export default function SongListItem({
         <span className="text-[13px] text-[var(--text-secondary)] truncate-1">{track.artist}</span>
       </div>
 
-      {/* 专辑名称：自适应撑开中间空间，消除视觉断裂 */}
-      <div className="flex-1 min-w-0 text-[13px] text-[var(--text-secondary)] truncate-1 pr-[16px]">
+      {/* 专辑名称 */}
+      <div className="w-[180px] shrink-0 text-[13px] text-[var(--text-secondary)] truncate-1">
         {track.album || '—'}
       </div>
 
-      {/* 右侧区域：悬停浮现的操作按钮组 + 紧贴最右侧的时长 */}
-      <div className="flex items-center gap-[8px] shrink-0 justify-end">
-        {/* 悬停按钮组：仅保留收藏与下一首播放，移除气泡与更多菜单 */}
-        <div className="flex items-center gap-[4px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-          <button
-            type="button"
-            title={isFavorite ? '取消收藏' : '添加到收藏'}
-            aria-label={isFavorite ? '取消收藏' : '收藏'}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
-            className={`p-1.5 rounded-[var(--radius-sm)] cursor-pointer transition-colors ${
-              isFavorite
-                ? 'text-[var(--accent)] hover:opacity-80'
-                : 'text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)]'
-            }`}
-          >
-            <Heart className={`w-[16px] h-[16px] ${isFavorite ? 'fill-current' : ''}`} strokeWidth={2} />
-          </button>
+      {/* 收藏按钮 */}
+      <button
+        type="button"
+        title={isFavorite ? '取消收藏' : '添加到收藏'}
+        aria-label={isFavorite ? '取消收藏' : '收藏'}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFavorite();
+        }}
+        className={`p-1.5 rounded-[var(--radius-sm)] cursor-pointer transition-colors ${
+          isFavorite
+            ? 'text-[var(--accent)] opacity-100'
+            : 'text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] opacity-0 group-hover:opacity-100'
+        }`}
+      >
+        <Heart className={`w-[16px] h-[16px] ${isFavorite ? 'fill-current' : ''}`} strokeWidth={2} />
+      </button>
 
-          <button
-            type="button"
-            title="下一首播放"
-            aria-label="下一首播放"
-            onClick={handlePlayNext}
-            className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
-          >
-            <ListEnd className="w-[16px] h-[16px]" strokeWidth={2} />
-          </button>
-        </div>
+      {/* 时长 */}
+      <span className="w-[44px] shrink-0 text-right text-[13px] text-[var(--text-tertiary)] tabular-nums">
+        {formatDuration(track.duration)}
+      </span>
 
-        {/* 时长：紧贴最右侧 */}
-        <span className="w-[44px] shrink-0 text-right text-[13px] text-[var(--text-tertiary)] tabular-nums">
-          {formatDuration(track.duration)}
-        </span>
-      </div>
+      {/* 下一首播放按钮（原更多操作位置，悬停浮现） */}
+      <button
+        type="button"
+        title="下一首播放"
+        aria-label="下一首播放"
+        onClick={handlePlayNext}
+        className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] transition-colors cursor-pointer opacity-0 group-hover:opacity-100 shrink-0"
+      >
+        <ListEnd className="w-[16px] h-[16px]" strokeWidth={2} />
+      </button>
     </div>
   );
 }
