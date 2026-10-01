@@ -22,7 +22,6 @@ interface LibraryState {
   isFavorite: (trackId: string) => boolean;
   addRecentTrack: (track: Track) => void;
   clearRecentTracks: () => void;
-  createPlaylist: (name: string, desc?: string) => UserPlaylist;
   importPlaylist: (name: string, tracks: Track[], desc?: string) => UserPlaylist;
   deletePlaylist: (playlistId: string) => void;
   addTrackToPlaylist: (playlistId: string, track: Track) => void;
@@ -65,20 +64,6 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
   clearRecentTracks: (): void => {
     set({ recentTracks: [] });
     void storage.set('recentTracks', []);
-  },
-
-  createPlaylist: (name: string, desc?: string): UserPlaylist => {
-    const newPl: UserPlaylist = {
-      id: `pl_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      name: name.trim() || '新建歌单',
-      desc: desc?.trim(),
-      tracks: [],
-      createdAt: Date.now(),
-    };
-    const next = [newPl, ...get().userPlaylists];
-    set({ userPlaylists: next });
-    void storage.set('userPlaylists', next);
-    return newPl;
   },
 
   importPlaylist: (name: string, tracks: Track[], desc?: string): UserPlaylist => {

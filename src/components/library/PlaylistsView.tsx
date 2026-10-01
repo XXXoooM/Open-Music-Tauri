@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ListMusic, Plus, Play, Trash2 } from 'lucide-react';
+import { ListMusic, Download, Play, Trash2 } from 'lucide-react';
 import { useLibraryStore, type UserPlaylist } from '../../stores/libraryStore';
 import { useNavigationStore } from '../../stores/navigationStore';
 import { usePlayerStore } from '../../stores/playerStore';
@@ -43,8 +43,8 @@ export default function PlaylistsView() {
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-[6px] px-[16px] py-[7px] rounded-full bg-[var(--text-primary)] text-[var(--material-card)] hover:opacity-90 transition-opacity font-medium text-[13px] cursor-pointer"
         >
-          <Plus className="w-[14px] h-[14px]" />
-          <span>新建 / 导入歌单</span>
+          <Download className="w-[14px] h-[14px]" />
+          <span>导入歌单</span>
         </button>
       </div>
 
@@ -53,7 +53,7 @@ export default function PlaylistsView() {
           <ListMusic className="w-[64px] h-[64px] text-[var(--text-tertiary)]" />
           <span className="text-[16px] text-[var(--text-secondary)]">暂无歌单</span>
           <span className="text-[13px] text-[var(--text-tertiary)]">
-            点击上方按钮，创建空白歌单或一键导入网易云歌单
+            点击上方按钮一键导入网易云歌单
           </span>
         </div>
       ) : (
