@@ -24,7 +24,7 @@ export default function AboutSection() {
             <div className="flex items-center gap-[8px]">
               <span className="text-[15px] font-bold text-[var(--text-primary)]">Open-Music</span>
               <span className="px-[6px] py-[1px] rounded-full text-[11px] font-semibold bg-[var(--active)] text-[var(--text-secondary)]">
-                v0.1.5
+                v0.1.7
               </span>
             </div>
             <span className="text-[12px] text-[var(--text-tertiary)] mt-[2px]">

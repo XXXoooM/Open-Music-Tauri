@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "0.1.5"
+version = "0.1.7"
 description = "Open Music - Apple Music style desktop player"
 authors = ["you"]
 license = ""

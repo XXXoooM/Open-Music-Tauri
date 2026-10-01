@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-10-02
+
+### Changed & Optimized
+- **歌曲列表纯粹化与交互精简**：
+  - 左侧序号仅保留纯数字，移除非播放状态下的播放三角形图标；当前播放歌曲保持跳动音浪波形（Equalizer）
+  - 移除气泡弹窗与多余层级，鼠标悬停时直出“收藏”与“下一首播放”快捷图标，一键设为下一首并伴有 Toast 反馈
+- **构建与依赖版本对齐**：
+  - 精准对齐 Tauri v2 Rust 插件与前端 NPM 依赖版本（updater 2.13.1、process 2.4.0）
+  - 优化 GitHub Actions 自动发布流水线，确保多平台稳定构建与自动签名
+
 ## [0.1.5] - 2026-10-01
 
 ### Added

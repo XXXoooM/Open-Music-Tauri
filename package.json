@@ -1,6 +1,6 @@
 {
   "name": "open-music-tauri",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Open Music Tauri - Apple Music style desktop music player",
   "private": true,
   "type": "module",
