@@ -15,23 +15,25 @@ jobs:
         include:
           - platform: 'windows-latest'
             args: ''
-          - platform: 'macos-latest'
-            args: '--target universal-apple-darwin'
+          # 如需构建并公证 macOS，建议申请 Apple 开发者账号后取消注释并配置公证 Secrets
+          # - platform: 'macos-latest'
+          #   args: '--target universal-apple-darwin'
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -44,18 +46,18 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Open Music ${{ github.ref_name }}'
-          releaseBody: 'See release notes and assets below.'
+          releaseBody: '请查看下方 Assets 下载最新版本。更新日志与详细说明请见 GitHub Release。'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
