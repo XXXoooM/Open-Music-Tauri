@@ -5,39 +5,40 @@ import MiniPlayer from './components/layout/MiniPlayer';
 import QueuePanel from './components/layout/QueuePanel';
 import NowPlaying from './components/now-playing/NowPlaying';
 import SettingsPanel from './components/settings/SettingsPanel';
+import UpdateNotification from './components/updater/UpdateNotification';
+import Toast from './components/ui/Toast';
 import { useAudio } from './hooks/useAudio';
 import { useDynamicColor } from './hooks/useDynamicColor';
 import { useHotkeys } from './hooks/useHotkeys';
 import { usePlayerStore } from './stores/playerStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useLibraryStore } from './stores/libraryStore';
+import { useUpdaterStore } from './stores/updaterStore';
 
 export default function App() {
-  // 全屏 NowPlaying 展开状态
   const [isNowPlayingOpen, setIsNowPlayingOpen] = useState(false);
-
-  // 设置面板展开状态
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // 待播清单展开状态
   const [isQueueOpen, setIsQueueOpen] = useState(false);
 
   // 1. 挂载音频引擎同步（全局一次）
   useAudio();
 
-  // 2. 挂载音乐库持久化水合
+  // 2. 挂载音乐库持久化水合与静默检查更新
   useEffect(() => {
     void useLibraryStore.getState().loadLibrary();
+    // 延迟 3 秒后台静默检查更新，不阻塞启动首屏渲染
+    const timer = setTimeout(() => {
+      void useUpdaterStore.getState().checkForUpdates(true);
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   // 3. 订阅当前播放曲目信息
-  const currentTrack = usePlayerStore(
-    (s) => s.playlist[s.currentTrackIndex]
-  );
+  const currentTrack = usePlayerStore((s) => s.playlist[s.currentTrackIndex]);
   const coverUrl = currentTrack?.pic ?? '';
   const trackKey = currentTrack?.id ?? '';
 
-  // 4. 挂载动态主题色 Hook（随封面变动）
+  // 4. 挂载动态主题色 Hook
   useDynamicColor(coverUrl, trackKey);
 
   // 5. 首次歌单加载
@@ -49,12 +50,10 @@ export default function App() {
   useEffect(() => {
     if (!isHydrated) return;
     void loadPlaylist(playlistId, apiSource);
-    // 依赖项仅为 [isHydrated]：确保仅在设置水合完成后触发一次初始歌单拉取；
-    // 后续歌单 ID 变动由用户在设置界面主动操作触发，避免输入过程被频繁重载
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated]);
 
-  // 5. 挂载全局键盘快捷键
+  // 6. 挂载全局键盘快捷键
   useHotkeys({
     isNowPlayingOpen,
     isSettingsOpen,
@@ -64,19 +63,13 @@ export default function App() {
     onCloseQueue: () => setIsQueueOpen(false),
   });
 
-  // 6. 三段式布局骨架
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
-      {/* Upper Area: Sidebar + MainContent */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
-
-        {/* MainContent */}
         <MainContent />
       </div>
 
-      {/* MiniPlayer */}
       <MiniPlayer
         isNowPlayingOpen={isNowPlayingOpen}
         onToggleNowPlaying={() => setIsNowPlayingOpen((prev) => !prev)}
@@ -84,23 +77,13 @@ export default function App() {
         onToggleQueue={() => setIsQueueOpen((prev) => !prev)}
       />
 
-      {/* 待播清单浮层 */}
-      <QueuePanel
-        isOpen={isQueueOpen}
-        onClose={() => setIsQueueOpen(false)}
-      />
+      <QueuePanel isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
+      <NowPlaying isOpen={isNowPlayingOpen} onClose={() => setIsNowPlayingOpen(false)} />
+      <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      {/* 全屏 NowPlaying 播放页 */}
-      <NowPlaying
-        isOpen={isNowPlayingOpen}
-        onClose={() => setIsNowPlayingOpen(false)}
-      />
-
-      {/* 设置抽屉面板 */}
-      <SettingsPanel
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+      {/* 右上角更新提示卡片与全局 Toast 提示 */}
+      <UpdateNotification />
+      <Toast />
     </div>
   );
 }

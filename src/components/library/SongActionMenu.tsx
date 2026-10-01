@@ -3,6 +3,7 @@ import { ListPlus, ListEnd, Heart, Copy } from 'lucide-react';
 import type { Track } from '../../types';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useLibraryStore } from '../../stores/libraryStore';
+import { useToastStore } from '../../stores/toastStore';
 
 interface SongActionMenuProps {
   track: Track;
@@ -37,16 +38,19 @@ export default function SongActionMenu({ track, isOpen, onClose }: SongActionMen
     const nextList = [...playlist];
     nextList.splice(currentTrackIndex + 1, 0, track);
     usePlayerStore.setState({ playlist: nextList });
+    useToastStore.getState().showToast('已设为下一首播放', 'success');
     onClose();
   };
 
   const handleEnqueue = () => {
     enqueueTrack(track);
+    useToastStore.getState().showToast('已加入待播清单', 'success');
     onClose();
   };
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(`${track.name} - ${track.artist}`);
+    useToastStore.getState().showToast('已复制歌曲信息', 'success');
     onClose();
   };
 

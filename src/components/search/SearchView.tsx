@@ -5,6 +5,7 @@ import { usePlayerStore } from '../../stores/playerStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useNavigationStore } from '../../stores/navigationStore';
 import { useLibraryStore } from '../../stores/libraryStore';
+import { useToastStore } from '../../stores/toastStore';
 import type { Track } from '../../types';
 
 const HOT_TAGS = ['周杰伦', '林俊杰', '陈奕迅', '陶喆', '王菲', 'Taylor Swift', '告五人', '许嵩'];
@@ -46,6 +47,7 @@ export default function SearchView() {
   const handleEnqueue = (e: React.MouseEvent, track: Track) => {
     e.stopPropagation();
     enqueueTrack(track);
+    useToastStore.getState().showToast('已加入待播清单', 'success');
     setAddedId(track.id);
     setTimeout(() => setAddedId(null), 1500);
   };

@@ -3,12 +3,11 @@ import SegmentedControl from '../ui/SegmentedControl';
 import Switch from '../ui/Switch';
 import Slider from '../ui/Slider';
 import CacheSection from './CacheSection';
+import AboutSection from './AboutSection';
 import { useSettingsStore } from '../../stores/settingsStore';
 
 interface SettingsPanelProps {
-  /** 是否展开显示 */
   isOpen: boolean;
-  /** 关闭回调 */
   onClose(): void;
 }
 
@@ -36,10 +35,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   return (
     <>
-      {/* 点击遮罩关闭面板（仅打开时生效） */}
-      {isOpen && (
-        <div className="fixed inset-0" style={{ zIndex: 199 }} onClick={onClose} />
-      )}
+      {isOpen && <div className="fixed inset-0" style={{ zIndex: 199 }} onClick={onClose} />}
 
       <aside
         data-region="settings-panel"
@@ -56,24 +52,22 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           boxShadow: isOpen ? 'var(--shadow-panel)' : 'none',
         }}
       >
-        {/* 顶部栏 56px */}
         <header className="h-[56px] px-[24px] flex items-center justify-between shrink-0">
           <h2 className="text-[17px] font-semibold text-[var(--text-primary)]">设置</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="关闭设置"
-            className="w-[28px] h-[28px] rounded-[var(--radius-sm)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover)] transition-colors duration-[var(--duration-hover)] ease-[var(--ease-apple)] cursor-pointer"
+            className="w-[28px] h-[28px] rounded-[var(--radius-sm)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
           >
             <X className="w-[18px] h-[18px]" />
           </button>
         </header>
 
-        {/* 可滚动内容区 */}
-        <div className="flex-1 overflow-y-auto px-[24px] pb-[24px]">
-          {/* 分区 1：外观 */}
-          <section className="mb-[32px]">
-            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[12px]">外观</h3>
+        <div className="flex-1 overflow-y-auto px-[24px] pb-[24px] flex flex-col gap-[28px]">
+          {/* 外观 */}
+          <section>
+            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[8px]">外观</h3>
             <div className="flex flex-col">
               <div className="h-[44px] flex items-center justify-between">
                 <span className="text-[14px] text-[var(--text-primary)]">背景模式</span>
@@ -90,9 +84,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
           </section>
 
-          {/* 分区 2：歌词 */}
-          <section className="mb-[32px]">
-            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[12px]">歌词</h3>
+          {/* 歌词 */}
+          <section>
+            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[8px]">歌词</h3>
             <div className="flex flex-col">
               <div className="h-[44px] flex items-center justify-between">
                 <span className="text-[14px] text-[var(--text-primary)]">字号</span>
@@ -109,9 +103,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
           </section>
 
-          {/* 分区 3：播放 */}
-          <section className="mb-[32px]">
-            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[12px]">播放</h3>
+          {/* 播放 */}
+          <section>
+            <h3 className="text-[13px] font-semibold text-[var(--text-tertiary)] uppercase tracking-[0.06em] mb-[8px]">播放</h3>
             <div className="flex flex-col">
               <div className="h-[44px] flex items-center justify-between">
                 <span className="text-[14px] text-[var(--text-primary)]">淡入淡出</span>
@@ -121,9 +115,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 <span className="text-[14px] text-[var(--text-primary)]">交叉淡入时长</span>
                 <div className="flex items-center gap-[8px]">
                   <Slider value={store.crossfadeDuration} min={0} max={12} step={1} onChange={store.setCrossfadeDuration} aria-label="交叉淡入时长" />
-                  <span className="text-[13px] text-[var(--text-secondary)] tabular-nums w-[24px] text-right">
-                    {store.crossfadeDuration}s
-                  </span>
+                  <span className="text-[13px] text-[var(--text-secondary)] tabular-nums w-[24px] text-right">{store.crossfadeDuration}s</span>
                 </div>
               </div>
               <div className="h-[44px] flex items-center justify-between">
@@ -133,8 +125,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
           </section>
 
-          {/* 分区 4：缓存与存储 */}
+          {/* 缓存与存储 */}
           <CacheSection />
+
+          {/* 关于与更新 */}
+          <AboutSection />
         </div>
       </aside>
     </>

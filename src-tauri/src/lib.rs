@@ -76,6 +76,8 @@ async fn fetch_netease_get(endpoint: String) -> Result<String, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![fetch_netease_lyrics, fetch_netease_get])
         .setup(|app| {
             // 开发环境启用日志

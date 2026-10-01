@@ -48,6 +48,8 @@ Thumbs.db
 
 # Internal docs (not for public release)
 CLAUDE.md
+*.key
+*.key.pub
 PLAN.md
 
 # Reference materials (third-party screenshots, not our work)

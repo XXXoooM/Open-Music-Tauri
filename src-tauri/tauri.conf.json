@@ -29,6 +29,14 @@
       "csp": "default-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; connect-src 'self' https: http://localhost:1420 ws://localhost:1420; style-src 'self' 'unsafe-inline'; script-src 'self'"
     }
   },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/XXXoooM/Open-Music-Tauri/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJENUUyRDU3NTBEMkExOEMKUldTTW9kSlFWeTFldlhPS2FXOXNOQzA2eWtlbldNMFhVbmNIMC9UMWNFakYveHRVaURXNUJKMVEK"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
