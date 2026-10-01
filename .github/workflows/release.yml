@@ -48,6 +48,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Extract Changelog
+        id: changelog
+        run: node scripts/extract-changelog.cjs ${{ github.ref_name }}
+
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
         env:
@@ -57,7 +61,8 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Open Music ${{ github.ref_name }}'
-          releaseBody: '请查看下方 Assets 下载最新版本。更新日志与详细说明请见 GitHub Release。'
+          releaseBody: ${{ steps.changelog.outputs.body }}
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
