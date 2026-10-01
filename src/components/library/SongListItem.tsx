@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Heart, MoreHorizontal } from 'lucide-react';
+import { Heart, ListEnd } from 'lucide-react';
 import type { Track } from '../../types';
 import EqualizerIcon from '../ui/EqualizerIcon';
-import SongActionMenu from './SongActionMenu';
+import { usePlayerStore } from '../../stores/playerStore';
+import { useToastStore } from '../../stores/toastStore';
 
 interface SongListItemProps {
   track: Track;
@@ -30,7 +30,14 @@ export default function SongListItem({
   onPlay,
   onToggleFavorite,
 }: SongListItemProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const handlePlayNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const { playlist, currentTrackIndex } = usePlayerStore.getState();
+    const nextList = [...playlist];
+    nextList.splice(currentTrackIndex + 1, 0, track);
+    usePlayerStore.setState({ playlist: nextList });
+    useToastStore.getState().showToast('已设为下一首播放', 'success');
+  };
 
   return (
     <div
@@ -44,7 +51,7 @@ export default function SongListItem({
         isCurrent ? 'bg-[var(--active)] font-medium shadow-sm' : 'hover:bg-[var(--hover)]'
       }`}
     >
-      {/* 序号：只显示纯序号，当前播放时显示跳动音浪，彻底删除播放键 */}
+      {/* 序号：纯数字序号，当前播放时显示跳动音浪 */}
       <span className="w-[28px] shrink-0 flex items-center justify-center text-[13px] tabular-nums text-[var(--text-tertiary)]">
         {isCurrent ? <EqualizerIcon isPlaying={isPlaying} /> : <span>{index + 1}</span>}
       </span>
@@ -72,16 +79,13 @@ export default function SongListItem({
         {track.album || '—'}
       </div>
 
-      {/* 右侧区域：悬停浮现的操作按钮 + 紧贴最右侧的时长 */}
-      <div className="flex items-center gap-[10px] shrink-0 justify-end">
-        {/* 爱心与更多操作：仅悬停或菜单展开时显示 */}
-        <div
-          className={`flex items-center gap-[4px] transition-opacity duration-150 ${
-            isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
-        >
+      {/* 右侧区域：悬停浮现的操作按钮组 + 紧贴最右侧的时长 */}
+      <div className="flex items-center gap-[8px] shrink-0 justify-end">
+        {/* 悬停按钮组：仅保留收藏与下一首播放，移除气泡与更多菜单 */}
+        <div className="flex items-center gap-[4px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <button
             type="button"
+            title={isFavorite ? '取消收藏' : '添加到收藏'}
             aria-label={isFavorite ? '取消收藏' : '收藏'}
             onClick={(e) => {
               e.stopPropagation();
@@ -90,33 +94,21 @@ export default function SongListItem({
             className={`p-1.5 rounded-[var(--radius-sm)] cursor-pointer transition-colors ${
               isFavorite
                 ? 'text-[var(--accent)] hover:opacity-80'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)]'
             }`}
           >
             <Heart className={`w-[16px] h-[16px] ${isFavorite ? 'fill-current' : ''}`} strokeWidth={2} />
           </button>
 
-          <div className="relative">
-            <button
-              type="button"
-              aria-label="更多操作"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-              className={`p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover)] transition-colors cursor-pointer ${
-                isMenuOpen ? 'text-[var(--text-primary)] bg-[var(--hover)]' : ''
-              }`}
-            >
-              <MoreHorizontal className="w-[16px] h-[16px]" strokeWidth={2} />
-            </button>
-
-            <SongActionMenu
-              track={track}
-              isOpen={isMenuOpen}
-              onClose={() => setIsMenuOpen(false)}
-            />
-          </div>
+          <button
+            type="button"
+            title="下一首播放"
+            aria-label="下一首播放"
+            onClick={handlePlayNext}
+            className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] transition-colors cursor-pointer"
+          >
+            <ListEnd className="w-[16px] h-[16px]" strokeWidth={2} />
+          </button>
         </div>
 
         {/* 时长：紧贴最右侧 */}
