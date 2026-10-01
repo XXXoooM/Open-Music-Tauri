@@ -12,7 +12,7 @@ interface SongActionMenuProps {
 }
 
 /**
- * 歌曲行 Apple 风格气泡操作菜单
+ * 歌曲行 Apple 风格精美气泡操作菜单
  */
 export default function SongActionMenu({ track, isOpen, onClose }: SongActionMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,44 +58,54 @@ export default function SongActionMenu({ track, isOpen, onClose }: SongActionMen
     <div
       ref={menuRef}
       onClick={(e) => e.stopPropagation()}
-      className="absolute right-0 top-[40px] z-50 w-[170px] py-[4px] rounded-[var(--radius-md)] border border-[var(--border)] shadow-[var(--shadow-panel)] text-[13px] text-[var(--text-primary)]"
+      className="absolute right-0 top-[38px] z-50 w-[184px] p-[6px] rounded-[10px] border border-white/10 select-none text-[13.5px]"
       style={{
-        background: 'var(--material-card)',
-        backdropFilter: 'blur(var(--blur-panel))',
-        WebkitBackdropFilter: 'blur(var(--blur-panel))',
+        background: 'rgba(30, 30, 30, 0.82)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
       }}
     >
       <button
         type="button"
         onClick={handlePlayNext}
-        className="flex items-center gap-[10px] w-full px-[12px] py-[8px] hover:bg-[var(--hover)] transition-colors cursor-pointer text-left"
+        className="group/item flex items-center gap-[10px] w-full px-[12px] py-[8px] rounded-[6px] text-[var(--text-primary)] hover:bg-white/10 hover:text-[var(--accent)] transition-all duration-150 cursor-pointer text-left font-normal"
       >
-        <ListEnd className="w-[15px] h-[15px] text-[var(--text-secondary)]" />
+        <ListEnd className="w-[16px] h-[16px] text-[var(--text-secondary)] group-hover/item:text-[var(--accent)] transition-colors shrink-0" strokeWidth={2} />
         <span>下一首播放</span>
       </button>
+
       <button
         type="button"
         onClick={handleEnqueue}
-        className="flex items-center gap-[10px] w-full px-[12px] py-[8px] hover:bg-[var(--hover)] transition-colors cursor-pointer text-left"
+        className="group/item flex items-center gap-[10px] w-full px-[12px] py-[8px] rounded-[6px] text-[var(--text-primary)] hover:bg-white/10 hover:text-[var(--accent)] transition-all duration-150 cursor-pointer text-left font-normal"
       >
-        <ListPlus className="w-[15px] h-[15px] text-[var(--text-secondary)]" />
+        <ListPlus className="w-[16px] h-[16px] text-[var(--text-secondary)] group-hover/item:text-[var(--accent)] transition-colors shrink-0" strokeWidth={2} />
         <span>加入待播清单</span>
       </button>
+
       <button
         type="button"
         onClick={() => { toggleFavorite(track); onClose(); }}
-        className="flex items-center gap-[10px] w-full px-[12px] py-[8px] hover:bg-[var(--hover)] transition-colors cursor-pointer text-left"
+        className="group/item flex items-center gap-[10px] w-full px-[12px] py-[8px] rounded-[6px] text-[var(--text-primary)] hover:bg-white/10 hover:text-[var(--accent)] transition-all duration-150 cursor-pointer text-left font-normal"
       >
-        <Heart className={`w-[15px] h-[15px] ${isFavorite ? 'text-[var(--accent)] fill-current' : 'text-[var(--text-secondary)]'}`} />
+        <Heart
+          className={`w-[16px] h-[16px] shrink-0 transition-colors ${
+            isFavorite ? 'text-[var(--accent)] fill-current' : 'text-[var(--text-secondary)] group-hover/item:text-[var(--accent)]'
+          }`}
+          strokeWidth={2}
+        />
         <span>{isFavorite ? '取消收藏' : '添加到收藏'}</span>
       </button>
-      <div className="h-[1px] my-[4px] bg-[var(--border)]" />
+
+      <div className="h-[1px] my-[5px] mx-[6px] bg-white/10" />
+
       <button
         type="button"
         onClick={handleCopy}
-        className="flex items-center gap-[10px] w-full px-[12px] py-[8px] hover:bg-[var(--hover)] transition-colors cursor-pointer text-left"
+        className="group/item flex items-center gap-[10px] w-full px-[12px] py-[8px] rounded-[6px] text-[var(--text-primary)] hover:bg-white/10 hover:text-[var(--accent)] transition-all duration-150 cursor-pointer text-left font-normal"
       >
-        <Copy className="w-[15px] h-[15px] text-[var(--text-secondary)]" />
+        <Copy className="w-[16px] h-[16px] text-[var(--text-secondary)] group-hover/item:text-[var(--accent)] transition-colors shrink-0" strokeWidth={2} />
         <span>复制歌曲信息</span>
       </button>
     </div>
