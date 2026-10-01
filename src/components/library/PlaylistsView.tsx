@@ -14,7 +14,7 @@ export default function PlaylistsView() {
   const setPlaylistAndPlay = usePlayerStore((s) => s.setPlaylistAndPlay);
 
   const handleOpenDetail = (playlist: UserPlaylist) => {
-    setSelectedPlaylistId(playlist.id);
+    setSelectedPlaylistId(playlist.id, 'playlists');
     setActiveView('playlist-detail');
   };
 

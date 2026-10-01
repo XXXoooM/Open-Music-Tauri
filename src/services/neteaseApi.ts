@@ -46,9 +46,6 @@ interface RawSong {
   duration?: number;
 }
 
-/**
- * 网易云在线单曲搜索（带 10 分钟缓存）
- */
 export async function searchSongs(keyword: string, apiSource: ApiSource): Promise<Track[]> {
   const q = keyword.trim();
   if (!q) return [];
@@ -57,9 +54,7 @@ export async function searchSongs(keyword: string, apiSource: ApiSource): Promis
   if (cached) return cached;
 
   try {
-    const raw = await fetchNeteaseApi(
-      `/api/cloudsearch/pc?s=${encodeURIComponent(q)}&type=1&offset=0&limit=30`
-    );
+    const raw = await fetchNeteaseApi(`/api/cloudsearch/pc?s=${encodeURIComponent(q)}&type=1&offset=0&limit=30`);
     const json = JSON.parse(raw) as { result?: { songs?: RawSong[] } };
     const rawSongs = json.result?.songs || [];
 
@@ -89,4 +84,31 @@ export async function searchSongs(keyword: string, apiSource: ApiSource): Promis
     console.warn('[neteaseApi] Search failed:', err);
     return [];
   }
+}
+
+export async function fetchToplistFirstSongCover(playlistId: string): Promise<string | null> {
+  if (!playlistId) return null;
+  const cacheKey = `toplist_cover_${playlistId}`;
+  const cached = getCacheItem<string>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const raw = await fetchNeteaseApi(`/api/playlist/detail?id=${playlistId}`);
+    const json = JSON.parse(raw) as {
+      result?: {
+        coverImgUrl?: string;
+        tracks?: Array<{ al?: { picUrl?: string }; album?: { picUrl?: string } }>;
+      };
+    };
+    const firstTrack = json.result?.tracks?.[0];
+    const pic = firstTrack?.al?.picUrl || firstTrack?.album?.picUrl || json.result?.coverImgUrl || null;
+    if (pic) {
+      const normalized = pic.includes('?') ? pic : `${pic}?param=500y500`;
+      setCacheItem(cacheKey, normalized, 24 * 60 * 60 * 1000);
+      return normalized;
+    }
+  } catch (err) {
+    console.warn(`[neteaseApi] fetchToplistFirstSongCover failed for ${playlistId}:`, err);
+  }
+  return null;
 }

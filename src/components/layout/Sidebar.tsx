@@ -31,6 +31,7 @@ const libraryNavItems: NavItem[] = [
 
 export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const activeView = useNavigationStore((s) => s.activeView);
+  const playlistSourceView = useNavigationStore((s) => s.playlistSourceView);
   const setActiveView = useNavigationStore((s) => s.setActiveView);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -38,7 +39,7 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
     const Icon = item.icon;
     const isActive =
       item.view === activeView ||
-      (item.view === 'playlists' && activeView === 'playlist-detail');
+      (activeView === 'playlist-detail' && item.view === playlistSourceView);
     const isHovered = hoveredId === item.id;
 
     const bg = isActive ? 'var(--active)' : isHovered ? 'var(--hover)' : undefined;

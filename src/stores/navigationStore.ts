@@ -9,12 +9,15 @@ export type ActiveView =
   | 'playlist-detail'
   | 'songs';
 
+export type PlaylistSourceView = 'browse' | 'playlists';
+
 interface NavigationState {
   activeView: ActiveView;
   selectedPlaylistId: string | null;
+  playlistSourceView: PlaylistSourceView;
   globalSearchQuery: string;
   setActiveView: (view: ActiveView) => void;
-  setSelectedPlaylistId: (id: string | null) => void;
+  setSelectedPlaylistId: (id: string | null, source?: PlaylistSourceView) => void;
   setGlobalSearchQuery: (query: string) => void;
 }
 
@@ -24,8 +27,10 @@ interface NavigationState {
 export const useNavigationStore = create<NavigationState>((set) => ({
   activeView: 'browse',
   selectedPlaylistId: null,
+  playlistSourceView: 'playlists',
   globalSearchQuery: '',
   setActiveView: (activeView) => set({ activeView }),
-  setSelectedPlaylistId: (selectedPlaylistId) => set({ selectedPlaylistId }),
+  setSelectedPlaylistId: (selectedPlaylistId, source = 'playlists') =>
+    set({ selectedPlaylistId, playlistSourceView: source }),
   setGlobalSearchQuery: (globalSearchQuery) => set({ globalSearchQuery }),
 }));
